@@ -1,0 +1,58 @@
+# 시작하기
+
+## 설치
+
+```bash
+# npm
+npm install @frontend-toolkit/hooks @frontend-toolkit/components
+
+# pnpm
+pnpm add @frontend-toolkit/hooks @frontend-toolkit/components
+
+# yarn
+yarn add @frontend-toolkit/hooks @frontend-toolkit/components
+```
+
+## 사용법
+
+### Hooks
+
+```tsx
+import { useDebounce } from '@frontend-toolkit/hooks';
+
+function SearchInput() {
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
+
+  useEffect(() => {
+    // API 호출
+    fetchResults(debouncedSearch);
+  }, [debouncedSearch]);
+
+  return <input value={search} onChange={e => setSearch(e.target.value)} />;
+}
+```
+
+### Components
+
+```tsx
+import { InViewTrigger } from '@frontend-toolkit/components';
+
+function LazySection() {
+  return (
+    <InViewTrigger onEnter={() => console.log('화면에 보임!')}>
+      <div>내용</div>
+    </InViewTrigger>
+  );
+}
+```
+
+## TypeScript
+
+모든 패키지는 TypeScript로 작성되었으며 타입 정의가 포함되어 있습니다.
+
+```tsx
+// 타입이 자동으로 추론됩니다
+const debouncedValue = useDebounce(searchTerm, 300);
+//    ^? string
+```
