@@ -1,0 +1,50 @@
+# Frontend Toolkit
+
+🚧 **개발 중인 프로젝트입니다**
+
+선언적 API와 타입 안전성으로 개발자 경험을 극대화하는 React 라이브러리
+
+## 특징
+
+- ✅ **선언적 API**: 무엇을 할지만 표현
+- ✅ **타입 안전성**: TypeScript strict mode 100%
+- ✅ **측정 가능한 성능**: 정량적 수치로 개선 입증
+- ✅ **Tree-shaking**: 사용하는 것만 번들에 포함
+
+## 패키지
+
+### [@frontend-toolkit/hooks](/hooks)
+
+React 훅 라이브러리
+
+```tsx
+import { useDebounce } from '@frontend-toolkit/hooks';
+
+const debouncedValue = useDebounce(value, 300);
+```
+
+### [@frontend-toolkit/components](/components)
+
+UI 컴포넌트 라이브러리
+
+```tsx
+import { InViewTrigger } from '@frontend-toolkit/components';
+
+<InViewTrigger onEnter={() => console.log('보임!')}>
+  <div>내용</div>
+</InViewTrigger>;
+```
+
+### [@frontend-toolkit/utils](/utils)
+
+유틸리티 함수 라이브러리
+
+```tsx
+import { groupBy } from '@frontend-toolkit/utils';
+
+const grouped = groupBy(users, 'role');
+```
+
+## 시작하기
+
+[설치 가이드](/getting-started) 페이지에서 자세한 내용을 확인하세요.
