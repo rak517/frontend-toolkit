@@ -1,6 +1,7 @@
 {
   "name": "@frontend-toolkit/components",
   "version": "0.0.0",
+  "description": "Declarative React UI components with type safety",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -14,24 +15,26 @@
   "files": [
     "dist"
   ],
+  "sideEffects": false,
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "lint": "eslint src/",
-    "check-types": "tsc --noEmit"
+    "test": "vitest",
+    "bench": "vitest bench",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src/"
   },
+  "keywords": [
+    "react",
+    "components",
+    "ui",
+    "typescript"
+  ],
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
-  "devDependencies": {
-    "@types/react": "^18.3.18",
-    "@types/react-dom": "^18.3.5",
-    "eslint": "^9.18.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "tsup": "^8.5.0",
-    "typescript": "^5.9.2"
-  },
-  "sideEffects": false
+  "publishConfig": {
+    "access": "public"
+  }
 }
