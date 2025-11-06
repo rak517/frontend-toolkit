@@ -4,27 +4,40 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["dist/**", "!dist/**/*.map"]
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "tsconfig.json", "tsup.config.ts"],
+      "outputs": ["dist/**", ".next/**", "!**/*.map"],
+      "env": ["NODE_ENV"]
     },
     "dev": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     },
     "lint": {
       "dependsOn": ["^lint"],
-      "inputs": ["$TURBO_DEFAULT$", ".eslintrc.js", ".eslintignore"],
+      "inputs": ["$TURBO_DEFAULT$", ".eslintrc.js"],
       "outputs": []
     },
     "check-types": {
       "dependsOn": ["^check-types"],
-      "inputs": ["$TURBO_DEFAULT$", "tsconfig.json"],
-      "outputs": []
+      "inputs": ["$TURBO_DEFAULT$", "tsconfig*.json"],
+      "outputs": ["*.tsbuildinfo"]
     },
     "test": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", "vitest.config.ts"],
-      "outputs": ["coverage/**"]
+      "inputs": ["$TURBO_DEFAULT$", "**/*.test.ts", "**/*.test.tsx"],
+      "outputs": ["coverage/**"],
+      "env": ["NODE_ENV"]
+    },
+    "bench": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "outputs": ["benchmark-results/**"]
+    },
+    "clean": {
+      "cache": false
     }
-  }
+  },
+  "globalEnv": ["NODE_ENV"],
+  "globalPassThroughEnv": ["CI", "VERCEL"]
 }
