@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CalendarExample } from './CalendarExample';
 // import { useDebounce } from '@frontend-toolkit/hooks';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
 
       <div style={{ marginTop: '2rem', color: '#666' }}>
         <p>🚧 훅과 컴포넌트가 추가되면 여기서 테스트할 수 있습니다.</p>
+        <CalendarExample />
       </div>
     </div>
   );
