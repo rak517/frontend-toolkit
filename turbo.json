@@ -15,7 +15,7 @@
     },
     "lint": {
       "dependsOn": ["^lint"],
-      "inputs": ["$TURBO_DEFAULT$", ".eslintrc.js"],
+      "inputs": ["$TURBO_DEFAULT$", "eslint.config.js", "eslint.config.mjs"],
       "outputs": []
     },
     "check-types": {
