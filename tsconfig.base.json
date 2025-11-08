@@ -25,9 +25,9 @@
 
     "baseUrl": ".",
     "paths": {
-      "@frontend-toolkit/components": ["./packages/components/src"],
-      "@frontend-toolkit/hooks": ["./packages/hooks/src"],
-      "@frontend-toolkit/utils": ["./packages/utils/src"]
+      "@frontend-toolkit-js/components": ["./packages/components/src"],
+      "@frontend-toolkit-js/hooks": ["./packages/hooks/src"],
+      "@frontend-toolkit-js/utils": ["./packages/utils/src"]
     }
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@frontend-toolkit/utils",
+  "name": "@frontend-toolkit-js/utils",
   "version": "0.1.0",
   "description": "Type-safe utility functions for frontend development",
   "main": "./dist/index.js",
