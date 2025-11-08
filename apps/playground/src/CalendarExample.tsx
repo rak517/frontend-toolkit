@@ -1,4 +1,4 @@
-import { useCalendar } from '@frontend-toolkit/hooks';
+import { useCalendar } from '@frontend-toolkit-js/hooks';
 
 export function CalendarExample() {
   const cal = useCalendar();

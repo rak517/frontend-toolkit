@@ -8,8 +8,8 @@ const withNextra = nextra({
 export default withNextra({
   reactStrictMode: true,
   transpilePackages: [
-    '@frontend-toolkit/components',
-    '@frontend-toolkit/hooks',
-    '@frontend-toolkit/utils',
+    '@frontend-toolkit-js/components',
+    '@frontend-toolkit-js/hooks',
+    '@frontend-toolkit-js/utils',
   ],
 });

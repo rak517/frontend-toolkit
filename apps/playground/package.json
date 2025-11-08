@@ -9,9 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@frontend-toolkit/components": "workspace:*",
-    "@frontend-toolkit/hooks": "workspace:*",
-    "@frontend-toolkit/utils": "workspace:*",
+    "@frontend-toolkit-js/components": "workspace:*",
+    "@frontend-toolkit-js/hooks": "workspace:*",
+    "@frontend-toolkit-js/utils": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
