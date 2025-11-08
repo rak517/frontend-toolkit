@@ -1,5 +1,5 @@
 {
-  "name": "@frontend-toolkit/hooks",
+  "name": "@frontend-toolkit-js/hooks",
   "version": "0.1.0",
   "description": "React hooks for better DX with type safety",
   "main": "./dist/index.js",
@@ -27,9 +27,25 @@
   "keywords": [
     "react",
     "hooks",
+    "calendar",
+    "date",
+    "date-picker",
     "typescript",
-    "frontend"
+    "frontend",
+    "dx",
+    "developer-experience"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rak517/frontend-toolkit.git",
+    "directory": "packages/hooks"
+  },
+  "bugs": {
+    "url": "https://github.com/rak517/frontend-toolkit/issues"
+  },
+  "homepage": "https://github.com/rak517/frontend-toolkit#readme",
+  "author": "rak517",
+  "license": "MIT",
   "peerDependencies": {
     "react": ">=18.0.0"
   },
