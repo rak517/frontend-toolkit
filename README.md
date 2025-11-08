@@ -13,7 +13,7 @@ React 컴포넌트와 훅 라이브러리를 제작 중입니다.
 
 ## 📦 패키지
 
-- `@frontend-toolkit/components` - React 컴포넌트 (개발 중)
+- `@frontend-toolkit-js/components` - React 컴포넌트 (개발 중)
 
 ## 🛠️ 개발
 
