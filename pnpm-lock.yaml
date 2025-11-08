@@ -47,13 +47,13 @@ importers:
 
   apps/docs:
     dependencies:
-      '@frontend-toolkit/components':
+      '@frontend-toolkit-js/components':
         specifier: workspace:*
         version: link:../../packages/components
-      '@frontend-toolkit/hooks':
+      '@frontend-toolkit-js/hooks':
         specifier: workspace:*
         version: link:../../packages/hooks
-      '@frontend-toolkit/utils':
+      '@frontend-toolkit-js/utils':
         specifier: workspace:*
         version: link:../../packages/utils
       next:
@@ -99,13 +99,13 @@ importers:
 
   apps/playground:
     dependencies:
-      '@frontend-toolkit/components':
+      '@frontend-toolkit-js/components':
         specifier: workspace:*
         version: link:../../packages/components
-      '@frontend-toolkit/hooks':
+      '@frontend-toolkit-js/hooks':
         specifier: workspace:*
         version: link:../../packages/hooks
-      '@frontend-toolkit/utils':
+      '@frontend-toolkit-js/utils':
         specifier: workspace:*
         version: link:../../packages/utils
       react:
