@@ -21,7 +21,32 @@ export interface CalendarOptions {
  * useCalendar 옵션
  */
 export interface UseCalendarOptions extends CalendarOptions {
+  /**
+   * 초기 날짜
+   * - Date 객체
+   * - ISO 문자열 (예: "2024-01-15", "2024-01")
+   * - Unix timestamp (밀리초)
+   */
   defaultDate?: Date | string | number;
+
+  /**
+   * 날짜 변경 시 호출되는 콜백
+   *
+   * @param date - 변경된 날짜
+   *
+   * @example
+   * ```tsx
+   * const [searchParams, setSearchParams] = useSearchParams();
+   *
+   * const cal = useCalendar({
+   *   defaultDate: searchParams.get('date') ?? undefined,
+   *   onChange: (date) => {
+   *     setSearchParams({ date: format(date, 'yyyy-MM') });
+   *   }
+   * });
+   * ```
+   */
+  onChange?: (date: Date) => void;
 }
 
 export interface Weekday {
