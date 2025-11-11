@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { UseCalendarOptions } from './types';
 import { createCalendar, createWeekdays, parseDate } from './core';
 import { addMonths, subMonths } from 'date-fns';
+import { useIsMounted } from '../useIsMounted';
 
 /**
  * 달력 Hook
@@ -41,9 +42,17 @@ import { addMonths, subMonths } from 'date-fns';
 export function useCalendar(options: UseCalendarOptions = {}) {
   const { defaultDate = new Date(), weekStartsOn = 0, onChange } = options;
 
-  const initialDate = useMemo(() => parseDate(defaultDate), [defaultDate]);
+  const isMounted = useIsMounted();
+
+  const initialDate = useMemo(() => {
+    return defaultDate != null ? parseDate(defaultDate) : new Date();
+  }, [defaultDate, isMounted]);
 
   const [currentDate, setCurrentDate] = useState(initialDate);
+
+  useEffect(() => {
+    setCurrentDate(initialDate);
+  }, [initialDate]);
 
   const days = useMemo(
     () => createCalendar(currentDate, { weekStartsOn }),
@@ -68,15 +77,15 @@ export function useCalendar(options: UseCalendarOptions = {}) {
 
   const prev = useCallback(() => {
     updateDate(date => subMonths(date, 1));
-  }, []);
+  }, [updateDate]);
 
   const next = useCallback(() => {
     updateDate(date => addMonths(date, 1));
-  }, []);
+  }, [updateDate]);
 
   const today = useCallback(() => {
     updateDate(new Date());
-  }, []);
+  }, [updateDate]);
 
   const setDate = useCallback(
     (date: Date) => {
