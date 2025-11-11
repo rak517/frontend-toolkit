@@ -3,7 +3,9 @@ import {
   format,
   isSameDay,
   isSameMonth,
+  isValid,
   isWeekend,
+  parseISO,
   setDay,
   startOfMonth,
   startOfWeek,
@@ -11,6 +13,38 @@ import {
 } from 'date-fns';
 import type { CalendarDay, UseCalendarOptions, Weekday } from '../types';
 import { ko } from 'date-fns/locale';
+
+/**
+ * 다양한 날짜 형식을 Date 객체로 변환
+ *
+ * @param value - Date, ISO 문자열, 또는 timestamp
+ * @returns 유효한 Date 객체 또는 현재 날짜
+ *
+ * @example
+ * parseDate(new Date(2024, 0, 15))        // Date 객체 그대로
+ * parseDate("2024-01-15")                 // ISO 문자열
+ * parseDate("2024-01")                    // 년-월만
+ * parseDate(1705276800000)                // timestamp
+ * parseDate("invalid")                    // 현재 날짜 (fallback)
+ */
+export function parseDate(value: Date | string | number): Date {
+  if (value instanceof Date) {
+    return isValid(value) ? value : new Date();
+  }
+
+  if (typeof value === 'number') {
+    const date = new Date(value);
+    return isValid(date) ? date : new Date();
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.length === 7 ? `${value}-01` : value;
+    const date = parseISO(normalized);
+    return isValid(date) ? date : new Date();
+  }
+
+  return new Date();
+}
 
 /**
  * 달력 시작일 계산
