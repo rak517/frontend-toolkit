@@ -5,37 +5,24 @@ import { addMonths, subMonths } from 'date-fns';
 import { useIsMounted } from '../useIsMounted';
 
 /**
- * 달력 Hook
+ * 달력 데이터와 네비게이션을 제공하는 Hook
  *
- * 달력 데이터와 네비게이션을 제공합니다.
- * UI는 완전히 사용자가 제어하며, 이 Hook은 로직만 제공합니다.
+ * SSR 환경에서도 안전하게 동작합니다.
  *
- * @param options - 달력 옵션
- * @param options.defaultDate - 초기 날짜 (Date, ISO 문자열, timestamp)
+ * @param options.defaultDate - 초기 날짜 (Date | "2024-06" | timestamp)
  * @param options.weekStartsOn - 주 시작일 (0: 일요일, 1: 월요일)
- * @param options.onChange - 날짜 변경 시 호출되는 콜백
+ * @param options.onChange - 날짜 변경 시 콜백
  *
- * @returns 달력 데이터 및 네비게이션 함수
+ * @returns days - 42개 날짜 배열 (6주 × 7일)
+ * @returns weekdays - 요일 헤더 (7개)
+ * @returns currentDate - 현재 표시 중인 날짜
+ * @returns prev/next/today/setDate - 네비게이션 함수
  *
  * @example
  * ```tsx
- * // 기본 사용
- * const cal = useCalendar();
- *
- * // URL 쿼리 파라미터와 동기화
- * const [searchParams, setSearchParams] = useSearchParams();
  * const cal = useCalendar({
- *   defaultDate: searchParams.get('date') ?? undefined,
- *   onChange: (date) => {
- *     setSearchParams({ date: format(date, 'yyyy-MM') });
- *   }
- * });
- *
- * // 상태 관리와 통합
- * const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
- * const cal = useCalendar({
- *   defaultDate: selectedMonth,
- *   onChange: setSelectedMonth
+ *   defaultDate: searchParams.get('date'),
+ *   onChange: (date) => router.push(`?date=${format(date, 'yyyy-MM')}`)
  * });
  * ```
  */
