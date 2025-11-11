@@ -21,7 +21,7 @@ export interface CalendarOptions {
  * useCalendar 옵션
  */
 export interface UseCalendarOptions extends CalendarOptions {
-  defaultDate?: Date;
+  defaultDate?: Date | string | number;
 }
 
 export interface Weekday {
