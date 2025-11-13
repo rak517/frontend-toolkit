@@ -25,7 +25,9 @@ export function InViewTrigger({
   const { schedule: scheduleCallback } = useDelayedCallback(
     (entry: IntersectionObserverEntry) => {
       once.mark();
-      onInViewRef.current(entry);
+      if (onInViewRef.current) {
+        onInViewRef.current(entry);
+      }
     },
     debounce
   );
