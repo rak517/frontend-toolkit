@@ -1,8 +1,8 @@
 import type { CSSProperties, ReactNode } from 'react';
 
 export interface InViewTriggerProps {
-  onInView: (entry?: IntersectionObserverEntry) => void;
-  onOutView: (entry?: IntersectionObserverEntry) => void;
+  onInView?: (entry?: IntersectionObserverEntry) => void;
+  onOutView?: (entry?: IntersectionObserverEntry) => void;
   threshold?: number | number[];
   root?: Element | null;
   rootMargin?: string;
