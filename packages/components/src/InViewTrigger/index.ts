@@ -1,1 +1,1 @@
-export * from './InViewTrigger';
+export { InViewTrigger } from './InViewTrigger';
