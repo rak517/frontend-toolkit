@@ -1,6 +1,6 @@
 {
   "name": "@frontend-toolkit-js/components",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Declarative React UI components with type safety",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
