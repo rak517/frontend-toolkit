@@ -1,5 +1,12 @@
 # playground
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @frontend-toolkit-js/hooks@0.3.0
+
 ## 0.0.2
 
 ### Patch Changes
