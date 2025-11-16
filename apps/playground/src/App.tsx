@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { CalendarExample } from './CalendarExample';
 import { CalendarWithURLExample } from './CalendarWithURLExample';
 import { InViewTriggerExample } from './InViewTriggerExample';
+import { DebouncedCallbackExample } from './DebouncedCallbackExample';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'calendar' | 'inview'>('calendar');
+  const [activeTab, setActiveTab] = useState<
+    'calendar' | 'inview' | 'debouncedCallback'
+  >('debouncedCallback');
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'system-ui' }}>
@@ -45,6 +48,20 @@ function App() {
         >
           🔭 InViewTrigger
         </button>
+        <button
+          onClick={() => setActiveTab('debouncedCallback')}
+          style={{
+            padding: '8px 16px',
+            border: 'none',
+            background:
+              activeTab === 'debouncedCallback' ? '#3b82f6' : 'transparent',
+            color: activeTab === 'debouncedCallback' ? 'white' : '#6b7280',
+            cursor: 'pointer',
+            borderRadius: '4px 4px 0 0',
+          }}
+        >
+          🔄 DebouncedCallback
+        </button>
       </div>
 
       <div style={{ marginTop: '2rem' }}>
@@ -55,6 +72,7 @@ function App() {
           </>
         )}
         {activeTab === 'inview' && <InViewTriggerExample />}
+        {activeTab === 'debouncedCallback' && <DebouncedCallbackExample />}
       </div>
     </div>
   );
