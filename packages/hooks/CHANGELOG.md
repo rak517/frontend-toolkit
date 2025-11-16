@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+
+### Minor Changes
+
+- Add useDebouncedCallback hook with leading, trailing, maxWait options
+
 ## 0.2.0
 
 ### Minor Changes
