@@ -1,5 +1,3 @@
-// apps/playground/src/DebouncedCallbackExample.tsx
-
 import { useState } from 'react';
 import { useDebouncedCallback } from '@frontend-toolkit-js/hooks';
 
