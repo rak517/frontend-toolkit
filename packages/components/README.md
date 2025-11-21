@@ -17,101 +17,69 @@ yarn add @frontend-toolkit-js/components
 
 ## 특징
 
-- ✅ **선언적 API** - 무엇을 할지만 표현
-- ✅ **TypeScript 완벽 지원** - strict mode 100%
-- ✅ **작은 번들 크기** - Tree-shaking 지원
-- ✅ **제로 의존성** - React만 필요
+- 선언적 API와 가벼운 번들
+- React 외 의존성 없음 (zero-deps)
+- Strict TypeScript 지원 및 자동 완성
+- Tree-shaking 가능한 ESM 번들
 
 ---
 
-## 컴포넌트
+## 포함 컴포넌트
 
-### InViewTrigger
+| 컴포넌트           | 설명                                                                                        | 문서                                                             |
+| ------------------ | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `InViewTrigger`    | Intersection Observer 기반 뷰포트 감지. 무한 스크롤, 지연 로딩, 애니메이션 트리거 등에 사용 | [문서](./src/InViewTrigger/README.md)                            |
+| `SuspenseBoundary` | Suspense + ErrorBoundary 통합 컴포넌트. 로딩/에러/재시도 흐름을 선언적으로 처리             | [문서](./src/SuspenseBoundary/README.md)                         |
+| `ErrorBoundary`    | Suspense 없이도 사용할 수 있는 독립 에러 경계. 재시도/자동 리셋/로깅 지원                   | [문서](./src/SuspenseBoundary/README.md#errorboundary-단독-사용) |
 
-Intersection Observer 기반 화면 진입/이탈 감지 컴포넌트
+새로운 컴포넌트가 추가되어도 표 형태로 간단히 확장할 수 있도록 구성했습니다.
+
+---
+
+## 빠른 시작
 
 ```tsx
-import { InViewTrigger } from '@frontend-toolkit-js/components';
+import {
+  InViewTrigger,
+  SuspenseBoundary,
+} from '@frontend-toolkit-js/components';
 
-// 기본 사용
-<InViewTrigger onInView={() => console.log('화면에 보임!')}>
-  <div>내용</div>
-</InViewTrigger>
-
-// 무한 스크롤
-<InViewTrigger onInView={loadMore}>
-  <LoadingIndicator />
-</InViewTrigger>
-
-// 이미지 지연 로딩
-<InViewTrigger triggerOnce onInView={() => setLoaded(true)}>
-  {loaded ? <img src={src} /> : <Skeleton />}
-</InViewTrigger>
-```
-
-**주요 Props**:
-
-- `onInView` - 화면 진입 시 콜백 (필수)
-- `threshold` - 가시성 임계값 (0.0 ~ 1.0)
-- `triggerOnce` - 한 번만 실행
-- `debounce` - 지연 시간 (ms)
-
-[📖 자세한 문서](./src/InViewTrigger/README.md)
-
----
-
-## 개발 중
-
-다음 컴포넌트들이 추가될 예정입니다:
-
-- `LazyImage` - 이미지 지연 로딩
-- `VirtualScroll` - 가상 스크롤
-- `Portal` - Portal 래퍼
-
----
-
-## TypeScript
-
-모든 컴포넌트는 TypeScript로 작성되었으며 타입 정의가 포함되어 있습니다.
-
-```tsx
-<InViewTrigger
-  onInView={entry => {
-    // entry: IntersectionObserverEntry (자동 추론)
-    console.log(entry.intersectionRatio);
-  }}
->
-  <div>내용</div>
-</InViewTrigger>
+function Example() {
+  return (
+    <SuspenseBoundary
+      pendingFallback={<Spinner />}
+      errorFallback={<ErrorState />}
+    >
+      <InViewTrigger onInView={() => console.log('보임!')}>
+        <Article />
+      </InViewTrigger>
+    </SuspenseBoundary>
+  );
+}
 ```
 
 ---
 
-## 브라우저 지원
-
-- Chrome 51+
-- Firefox 55+
-- Safari 12.1+
-- Edge 15+
-
-IE 11은 [intersection-observer](https://www.npmjs.com/package/intersection-observer) polyfill 필요
-
----
-
-## 관련 패키지
-
-- [@frontend-toolkit-js/hooks](../hooks) - React Hooks 라이브러리
-- [@frontend-toolkit-js/utils](../utils) - 유틸리티 함수 라이브러리
-
----
-
-## 개발
+## 스크립트
 
 ```bash
 pnpm dev        # 개발 모드
 pnpm build      # 빌드
 pnpm test       # 테스트
 ```
+
+---
+
+## 관련 패키지
+
+- [@frontend-toolkit-js/hooks](../hooks) - React Hooks 모음
+- [@frontend-toolkit-js/utils](../utils) - 범용 유틸리티 함수
+
+---
+
+## 라이선스
+
+MIT © [rak517](https://github.com/rak517)
 
 ---
 
