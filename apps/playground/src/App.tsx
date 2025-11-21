@@ -3,10 +3,11 @@ import { CalendarExample } from './CalendarExample';
 import { CalendarWithURLExample } from './CalendarWithURLExample';
 import { InViewTriggerExample } from './InViewTriggerExample';
 import { DebouncedCallbackExample } from './DebouncedCallbackExample';
+import { SuspenseBoundaryExample } from './SuspenseBoundaryExample';
 
 function App() {
   const [activeTab, setActiveTab] = useState<
-    'calendar' | 'inview' | 'debouncedCallback'
+    'calendar' | 'inview' | 'debouncedCallback' | 'suspenseBoundary'
   >('debouncedCallback');
 
   return (
@@ -62,6 +63,22 @@ function App() {
         >
           🔄 DebouncedCallback
         </button>
+        <button
+          onClick={() => setActiveTab('suspenseBoundary')}
+          style={{
+            padding: '8px 16px',
+            border: 'none',
+            background:
+              activeTab === 'suspenseBoundary' ? '#3b82f6' : 'transparent',
+            color: activeTab === 'suspenseBoundary' ? 'white' : '#6b7280',
+            cursor: 'pointer',
+            borderRadius: '4px 4px 0 0',
+          }}
+        >
+          {activeTab === 'suspenseBoundary'
+            ? '🔄 SuspenseBoundary'
+            : '🔄 SuspenseBoundary'}
+        </button>
       </div>
 
       <div style={{ marginTop: '2rem' }}>
@@ -73,6 +90,7 @@ function App() {
         )}
         {activeTab === 'inview' && <InViewTriggerExample />}
         {activeTab === 'debouncedCallback' && <DebouncedCallbackExample />}
+        {activeTab === 'suspenseBoundary' && <SuspenseBoundaryExample />}
       </div>
     </div>
   );
