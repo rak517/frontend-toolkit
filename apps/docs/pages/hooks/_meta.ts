@@ -1,6 +1,17 @@
 export default {
-  'use-calendar': 'useCalendar',
-  'use-is-mounted': 'useIsMounted',
-  'use-debounce': 'useDebounce',
-  'use-debounced-callback': 'useDebouncedCallback',
+  index: {
+    title: '개요',
+  },
+  'use-calendar': {
+    title: 'useCalendar',
+  },
+  'use-is-mounted': {
+    title: 'useIsMounted',
+  },
+  'use-debounce': {
+    title: 'useDebounce',
+  },
+  'use-debounced-callback': {
+    title: 'useDebouncedCallback',
+  },
 } as const;
