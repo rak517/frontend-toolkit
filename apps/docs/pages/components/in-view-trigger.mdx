@@ -1,0 +1,384 @@
+# InViewTrigger
+
+Intersection Observer 기반 화면 진입/이탈 감지 컴포넌트입니다.
+
+## 언제 사용하나요?
+
+- ♾️ 무한 스크롤 구현
+- 🖼️ 이미지 지연 로딩
+- ✨ 스크롤 애니메이션 트리거
+- 📊 조회수 트래킹
+
+## 기본 사용법
+
+```tsx
+import { InViewTrigger } from '@frontend-toolkit-js/components';
+
+<InViewTrigger onInView={() => console.log('화면에 보임!')}>
+  <div>내용</div>
+</InViewTrigger>;
+```
+
+---
+
+## 주요 사용 사례
+
+### 1. 무한 스크롤
+
+```tsx
+function InfiniteScroll() {
+  const [items, setItems] = useState([1, 2, 3]);
+  const [loading, setLoading] = useState(false);
+
+  const loadMore = () => {
+    if (loading) return;
+    setLoading(true);
+
+    setTimeout(() => {
+      setItems(prev => [...prev, prev.length + 1, prev.length + 2]);
+      setLoading(false);
+    }, 1000);
+  };
+
+  return (
+    <div>
+      {items.map(item => (
+        <div key={item}>Item #{item}</div>
+      ))}
+
+      <InViewTrigger onInView={loadMore} threshold={0.1}>
+        <div>{loading ? '로딩 중...' : '👇 더 보기'}</div>
+      </InViewTrigger>
+    </div>
+  );
+}
+```
+
+### 2. 이미지 지연 로딩
+
+```tsx
+function LazyImage({ src }: { src: string }) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <InViewTrigger triggerOnce onInView={() => setLoaded(true)} threshold={0.3}>
+      <div style={{ minHeight: 200 }}>
+        {loaded ? <img src={src} alt="lazy" /> : <div>Loading...</div>}
+      </div>
+    </InViewTrigger>
+  );
+}
+```
+
+### 3. 스크롤 애니메이션
+
+```tsx
+function FadeInOnScroll() {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <InViewTrigger
+      onInView={() => setVisible(true)}
+      onOutView={() => setVisible(false)}
+      threshold={0.5}
+    >
+      <div
+        style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'all 0.5s',
+        }}
+      >
+        Fade In!
+      </div>
+    </InViewTrigger>
+  );
+}
+```
+
+### 4. 조회수 트래킹 (디바운스)
+
+```tsx
+function ArticleView({ articleId }: { articleId: string }) {
+  const trackView = () => {
+    analytics.track('article_view', { articleId });
+  };
+
+  return (
+    <InViewTrigger
+      triggerOnce
+      debounce={1000}
+      threshold={0.8}
+      onInView={trackView}
+    >
+      <article>{content}</article>
+    </InViewTrigger>
+  );
+}
+```
+
+---
+
+## API Reference
+
+```typescript
+interface InViewTriggerProps {
+  onInView?: (entry?: IntersectionObserverEntry) => void;
+  onOutView?: (entry?: IntersectionObserverEntry) => void;
+  threshold?: number | number[];
+  root?: Element | null;
+  rootMargin?: string;
+  triggerOnce?: boolean;
+  disabled?: boolean;
+  debounce?: number;
+  children: ReactNode;
+  className?: string;
+  style?: CSSProperties;
+}
+```
+
+### Props
+
+#### `onInView`
+
+화면에 진입했을 때 실행되는 콜백입니다.
+
+```tsx
+<InViewTrigger onInView={(entry) => {
+  console.log('보임!', entry.intersectionRatio);
+}}>
+```
+
+- **타입**: `(entry?: IntersectionObserverEntry) => void`
+- **필수**: ✅
+
+#### `onOutView`
+
+화면에서 벗어났을 때 실행되는 콜백입니다.
+
+```tsx
+<InViewTrigger
+  onInView={() => setVisible(true)}
+  onOutView={() => setVisible(false)}
+>
+```
+
+- **타입**: `(entry?: IntersectionObserverEntry) => void`
+- **기본값**: `undefined`
+
+#### `threshold`
+
+얼마나 보여야 트리거할지 결정합니다. (0.0 ~ 1.0)
+
+```tsx
+<InViewTrigger threshold={0.1} />   // 10% 보이면 실행
+<InViewTrigger threshold={0.5} />   // 50% 보이면 실행
+<InViewTrigger threshold={1.0} />   // 100% 보이면 실행
+```
+
+- **타입**: `number | number[]`
+- **기본값**: `0.5`
+
+#### `rootMargin`
+
+감지 영역을 확장/축소합니다.
+
+```tsx
+// 200px 전에 미리 로드
+<InViewTrigger rootMargin="200px 0px" onInView={loadMore}>
+  <LoadMoreButton />
+</InViewTrigger>
+```
+
+- **타입**: `string`
+- **기본값**: `"0px"`
+
+#### `triggerOnce`
+
+한 번만 실행할지 여부입니다.
+
+```tsx
+// 이미지 로딩은 한 번만
+<InViewTrigger triggerOnce onInView={loadImage}>
+  <img />
+</InViewTrigger>
+```
+
+- **타입**: `boolean`
+- **기본값**: `false`
+
+#### `debounce`
+
+콜백 실행 지연 시간(ms)입니다.
+
+```tsx
+// 빠른 스크롤 시 불필요한 호출 방지
+<InViewTrigger debounce={300} onInView={track}>
+  <Article />
+</InViewTrigger>
+```
+
+- **타입**: `number`
+- **기본값**: `0`
+
+#### `disabled`
+
+Observer를 비활성화합니다.
+
+```tsx
+<InViewTrigger disabled={!shouldTrack} onInView={track}>
+  <Content />
+</InViewTrigger>
+```
+
+- **타입**: `boolean`
+- **기본값**: `false`
+
+---
+
+## 성능 팁
+
+### ✅ 좋은 패턴
+
+```tsx
+// 한 번만 실행 (triggerOnce)
+<InViewTrigger triggerOnce onInView={loadImage} />
+
+// 디바운스 활용
+<InViewTrigger debounce={300} onInView={track} />
+
+// 적절한 threshold
+<InViewTrigger threshold={0.1} onInView={loadMore} />  // 미리 로드
+```
+
+### ❌ 피해야 할 패턴
+
+```tsx
+// 불필요한 매번 실행
+<InViewTrigger onInView={loadImage} />  // triggerOnce 빠짐!
+
+// 디바운스 없이 트래킹
+<InViewTrigger onInView={track} />  // 빠른 스크롤 시 과도한 호출
+
+// 너무 높은 threshold
+<InViewTrigger threshold={1.0} onInView={loadMore} />  // 늦게 로드됨
+```
+
+---
+
+## 내부 동작
+
+### Intersection Observer API
+
+이 컴포넌트는 [Intersection Observer API](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)를 사용합니다.
+
+```tsx
+// 내부 구현 (간략화)
+const observer = new IntersectionObserver(
+  entries => {
+    if (entries[0].isIntersecting) {
+      onInView(entries[0]);
+    }
+  },
+  { threshold, rootMargin, root }
+);
+
+observer.observe(element);
+```
+
+---
+
+## 성능 특성
+
+### 번들 크기
+
+- **~2.5 KB** (minified)
+- **~1.0 KB** (gzipped)
+
+### 메모리
+
+- Observer 인스턴스 자동 정리
+- 언마운트 시 disconnect
+
+### 브라우저 지원
+
+- Chrome 51+
+- Firefox 55+
+- Safari 12.1+
+- Edge 15+
+
+> IE 11은 [polyfill](https://www.npmjs.com/package/intersection-observer) 필요
+
+---
+
+## 트러블슈팅
+
+### Q: Observer가 동작하지 않아요
+
+**A:** 요소에 높이가 있는지 확인하세요
+
+```tsx
+// ❌ 높이가 0이면 감지 안 됨
+<InViewTrigger onInView={...}>
+  <div style={{ height: 0 }}>Content</div>
+</InViewTrigger>
+
+// ✅ 높이 지정
+<InViewTrigger onInView={...}>
+  <div style={{ minHeight: '100px' }}>Content</div>
+</InViewTrigger>
+```
+
+### Q: 콜백이 너무 자주 실행돼요
+
+**A:** `debounce`를 추가하세요
+
+```tsx
+<InViewTrigger debounce={300} onInView={...}>
+  <div>Content</div>
+</InViewTrigger>
+```
+
+### Q: triggerOnce를 리셋하고 싶어요
+
+**A:** `disabled`를 토글하세요
+
+```tsx
+const [disabled, setDisabled] = useState(false);
+
+// 리셋
+setDisabled(true);
+setTimeout(() => setDisabled(false), 0);
+```
+
+---
+
+## TypeScript
+
+모든 props에 타입이 정의되어 있습니다.
+
+```tsx
+<InViewTrigger
+  onInView={entry => {
+    entry?.intersectionRatio;
+    //      ^? number
+  }}
+  threshold={0.5}
+  //        ^? number | number[]
+>
+  <div>Content</div>
+</InViewTrigger>
+```
+
+---
+
+## 관련 문서
+
+- [Intersection Observer API](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
+- [React useRef](https://react.dev/reference/react/useRef)
+
+---
+
+## 참고
+
+- [GitHub Repository](https://github.com/rak517/frontend-toolkit)
