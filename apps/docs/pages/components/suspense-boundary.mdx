@@ -1,0 +1,331 @@
+# SuspenseBoundary & ErrorBoundary
+
+로딩(Suspense)과 에러(ErrorBoundary)를 하나의 선언적 컴포넌트로 묶어주는 유틸리티입니다.
+
+## 언제 사용하나요?
+
+- 🔄 비동기 컴포넌트 로딩/에러 처리
+- 🔁 재시도 로직 구현
+- 📊 에러 추적 및 로깅
+- 🎯 에러 격리 (부분 실패 허용)
+
+## 기본 사용법
+
+### SuspenseBoundary
+
+```tsx
+import { SuspenseBoundary } from '@frontend-toolkit-js/components';
+
+<SuspenseBoundary
+  pendingFallback={<Spinner />}
+  errorFallback={<ErrorMessage />}
+>
+  <UserProfile userId={userId} />
+</SuspenseBoundary>;
+```
+
+### ErrorBoundary (단독)
+
+```tsx
+import { ErrorBoundary } from '@frontend-toolkit-js/components';
+
+<ErrorBoundary fallback={<ErrorMessage />}>
+  <NonSuspenseWidget />
+</ErrorBoundary>;
+```
+
+---
+
+## 주요 사용 사례
+
+### 1. 함수형 에러 Fallback (재시도)
+
+```tsx
+<SuspenseBoundary
+  pendingFallback={<Loading />}
+  errorFallback={(error, reset) => (
+    <div>
+      <p>{error.message}</p>
+      <button onClick={reset}>다시 시도</button>
+    </div>
+  )}
+>
+  <UserProfile userId={userId} />
+</SuspenseBoundary>
+```
+
+### 2. resetKeys로 자동 상태 초기화
+
+```tsx
+<SuspenseBoundary
+  pendingFallback={<Loading />}
+  errorFallback={<ErrorMessage />}
+  resetKeys={[userId]}
+>
+  <UserProfile userId={userId} />
+</SuspenseBoundary>
+```
+
+`userId`가 바뀌면 에러 상태가 자동으로 리셋됩니다.
+
+### 3. onError / onReset 훅
+
+```tsx
+<SuspenseBoundary
+  pendingFallback={<Loading />}
+  errorFallback={<ErrorMessage />}
+  onError={(error, info) => {
+    console.error('Error:', error);
+    Sentry.captureException(error, { contexts: { react: info } });
+  }}
+  onReset={() => {
+    queryClient.invalidateQueries(['user', userId]);
+  }}
+>
+  <UserProfile userId={userId} />
+</SuspenseBoundary>
+```
+
+### 4. 중첩 사용 (에러 격리)
+
+```tsx
+<SuspenseBoundary pendingFallback={<Spinner />} errorFallback={<ErrorUI />}>
+  {/* 메인 콘텐츠 */}
+  <MainContent />
+
+  {/* 위젯 에러가 전체를 망가뜨리지 않음 */}
+  <ErrorBoundary fallback={<WidgetError />}>
+    <AsyncWidget />
+  </ErrorBoundary>
+</SuspenseBoundary>
+```
+
+---
+
+## API Reference
+
+### SuspenseBoundary
+
+```typescript
+interface SuspenseBoundaryProps {
+  children: ReactNode;
+  pendingFallback: ReactNode;
+  errorFallback: ReactNode | ((error: Error, reset: () => void) => ReactNode);
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  onReset?: () => void;
+  resetKeys?: unknown[];
+}
+```
+
+### ErrorBoundary
+
+```typescript
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback: ReactNode | ((error: Error, reset: () => void) => ReactNode);
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  onReset?: () => void;
+  resetKeys?: unknown[];
+}
+```
+
+---
+
+## Props 상세
+
+### `pendingFallback` (SuspenseBoundary만)
+
+Suspense 대기 상태 UI입니다.
+
+```tsx
+<SuspenseBoundary pendingFallback={<Spinner />}>
+```
+
+- **타입**: `ReactNode`
+- **필수**: ✅
+
+### `errorFallback` / `fallback`
+
+에러 표시 UI 또는 함수형 UI입니다.
+
+```tsx
+// ReactNode
+<SuspenseBoundary errorFallback={<ErrorMessage />}>
+
+// 함수형 (에러 + reset)
+<SuspenseBoundary
+  errorFallback={(error, reset) => (
+    <div>
+      <p>{error.message}</p>
+      <button onClick={reset}>재시도</button>
+    </div>
+  )}
+>
+```
+
+- **타입**: `ReactNode | (error: Error, reset: () => void) => ReactNode`
+- **필수**: ✅
+
+### `resetKeys`
+
+값이 변경되면 자동으로 에러 상태를 초기화합니다.
+
+```tsx
+<SuspenseBoundary
+  errorFallback={<Error />}
+  resetKeys={[userId, postId]}
+>
+```
+
+- **타입**: `unknown[]`
+- **기본값**: `undefined`
+
+### `onError`
+
+에러 발생 시 콜백입니다.
+
+```tsx
+<SuspenseBoundary
+  onError={(error, info) => {
+    console.error('Error:', error);
+    console.error('Component Stack:', info.componentStack);
+  }}
+>
+```
+
+- **타입**: `(error: Error, errorInfo: ErrorInfo) => void`
+- **기본값**: `undefined`
+
+### `onReset`
+
+에러 상태가 리셋될 때 호출됩니다.
+
+```tsx
+<SuspenseBoundary
+  onReset={() => {
+    queryClient.invalidateQueries(['user']);
+  }}
+>
+```
+
+- **타입**: `() => void`
+- **기본값**: `undefined`
+
+---
+
+## 패턴 가이드
+
+### ✅ 권장
+
+```tsx
+// resetKeys로 사용자 전환 시 자동 초기화
+<SuspenseBoundary resetKeys={[userId]} />
+
+// 함수형 fallback에서 캐시 삭제 후 reset
+<SuspenseBoundary
+  errorFallback={(error, reset) => {
+    removeCache(error);
+    return <RetryButton onClick={reset} />;
+  }}
+/>
+```
+
+### ❌ 지양
+
+```tsx
+// 긴 로딩 UI를 직접 children에서 if/else로 분기
+{
+  loading ? <Spinner /> : error ? <Error /> : <Content />;
+}
+// → SuspenseBoundary로 감싸서 선언적으로 표현
+```
+
+---
+
+## 내부 동작
+
+### React Error Boundary
+
+ErrorBoundary는 React의 [Error Boundary](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)를 사용합니다.
+
+```tsx
+class ErrorBoundaryImpl extends Component {
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    this.props.onError?.(error, errorInfo);
+  }
+
+  render() {
+    if (this.state.error) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
+```
+
+### resetKeys 동작
+
+```tsx
+componentDidUpdate(prevProps) {
+  // resetKeys가 변경되면 에러 리셋
+  if (hasResetKeysChanged(prevProps.resetKeys, this.props.resetKeys)) {
+    this.reset();
+  }
+}
+```
+
+---
+
+## 성능 특성
+
+### 번들 크기
+
+- **~1.5 KB** (minified)
+- **~0.6 KB** (gzipped)
+
+### 메모리
+
+- 에러 상태 1개만 유지
+- 클린업 불필요
+
+---
+
+## 디버깅 팁
+
+- 개발 모드에서 에러 스택 자동 출력
+- `resetKeys` 배열 순서 변경 시 리셋됨
+- Suspense 리소스와 함께 사용 권장
+
+---
+
+## TypeScript
+
+```tsx
+<SuspenseBoundary
+  errorFallback={(error, reset) => {
+    error.message;
+    //    ^? string
+    reset();
+    // ^? () => void
+  }}
+>
+  <Component />
+</SuspenseBoundary>
+```
+
+---
+
+## 관련 문서
+
+- [React Error Boundaries](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)
+- [React Suspense](https://react.dev/reference/react/Suspense)
+
+---
+
+## 참고
+
+- [GitHub Repository](https://github.com/rak517/frontend-toolkit)
