@@ -1,4 +1,11 @@
 export default {
-  'in-view-trigger': 'InViewTrigger',
-  'suspense-boundary': 'SuspenseBoundary & ErrorBoundary',
+  index: {
+    title: '개요',
+  },
+  'in-view-trigger': {
+    title: 'InViewTrigger',
+  },
+  'suspense-boundary': {
+    title: 'SuspenseBoundary & ErrorBoundary',
+  },
 } as const;
