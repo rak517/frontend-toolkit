@@ -1,0 +1,343 @@
+# useDebouncedCallback
+
+함수를 디바운스하여 반환하는 Hook입니다. `leading`, `trailing`, `maxWait` 옵션을 지원합니다.
+
+## 언제 사용하나요?
+
+- 🔍 검색 API 호출
+- 🖱️ 버튼 연타 방지
+- 💾 자동 저장 (타이핑 중)
+- 📜 스크롤 이벤트 최적화
+
+## 기본 사용법
+
+```tsx
+import { useDebouncedCallback } from '@frontend-toolkit-js/hooks';
+
+function SearchInput() {
+  const debouncedSearch = useDebouncedCallback((query: string) => {
+    fetch(`/api/search?q=${query}`);
+  }, 300);
+
+  return (
+    <input
+      onChange={e => debouncedSearch(e.target.value)}
+      placeholder="검색..."
+    />
+  );
+}
+```
+
+---
+
+## 주요 사용 사례
+
+### 1. 검색 자동완성
+
+```tsx
+function AutocompleteSearch() {
+  const [results, setResults] = useState([]);
+
+  const debouncedSearch = useDebouncedCallback(async (query: string) => {
+    const data = await fetch(`/api/search?q=${query}`);
+    setResults(data);
+  }, 300);
+
+  return <input onChange={e => debouncedSearch(e.target.value)} />;
+}
+```
+
+### 2. 버튼 연타 방지 (leading)
+
+```tsx
+function PaymentForm() {
+  const handleSubmit = useDebouncedCallback(
+    async formData => {
+      await submitPayment(formData);
+    },
+    2000,
+    { leading: true, trailing: false }
+  );
+
+  return <button onClick={handleSubmit}>결제하기</button>;
+}
+```
+
+**동작:**
+
+```
+클릭1 (0ms)    → 즉시 실행 ✅
+클릭2 (500ms)  → 무시 ❌
+클릭3 (1000ms) → 무시 ❌
+클릭4 (2100ms) → 다시 즉시 실행 ✅
+```
+
+### 3. 자동 저장 (maxWait)
+
+```tsx
+function Editor() {
+  const [content, setContent] = useState('');
+
+  const autoSave = useDebouncedCallback(
+    (text: string) => {
+      saveToServer(text);
+    },
+    1000,
+    { maxWait: 5000 }
+  );
+
+  return (
+    <textarea
+      value={content}
+      onChange={e => {
+        setContent(e.target.value);
+        autoSave(e.target.value);
+      }}
+    />
+  );
+}
+```
+
+**동작:**
+
+```
+계속 타이핑 → 1초 타이머 계속 리셋
+5초 경과     → 강제 저장! ⚡
+타이핑 멈춤  → 1초 후 저장 ✅
+```
+
+### 4. 스크롤 트래킹 (leading + trailing)
+
+```tsx
+function ScrollTracker() {
+  const trackScroll = useDebouncedCallback(
+    () => {
+      analytics.track('scroll', { position: window.scrollY });
+    },
+    200,
+    { leading: true, trailing: true }
+  );
+
+  useEffect(() => {
+    window.addEventListener('scroll', trackScroll);
+    return () => window.removeEventListener('scroll', trackScroll);
+  }, [trackScroll]);
+
+  return <div>...</div>;
+}
+```
+
+**동작:**
+
+```
+스크롤 시작 → 즉시 추적 ✅ (leading)
+계속 스크롤 → 대기...
+스크롤 멈춤 → 200ms 후 추적 ✅ (trailing)
+```
+
+---
+
+## API Reference
+
+```typescript
+function useDebouncedCallback<T extends (...args: any[]) => any>(
+  callback: T,
+  delay: number,
+  options?: DebouncedCallbackOptions
+): T;
+```
+
+### Parameters
+
+#### `callback`
+
+디바운스할 함수입니다.
+
+- **타입**: `(...args: any[]) => any`
+
+#### `delay`
+
+지연 시간(밀리초)입니다.
+
+- **타입**: `number`
+
+#### `options`
+
+디바운스 옵션입니다.
+
+```typescript
+interface DebouncedCallbackOptions {
+  leading?: boolean; // 첫 호출 즉시 실행
+  trailing?: boolean; // 마지막 호출 후 실행
+  maxWait?: number; // 최대 대기 시간
+}
+```
+
+---
+
+## 옵션 상세
+
+### `leading`
+
+첫 호출 시 즉시 실행 여부
+
+```tsx
+// leading: true → 첫 호출 즉시 실행
+const debounced = useDebouncedCallback(fn, 1000, {
+  leading: true,
+  trailing: false,
+});
+
+// 사용 사례: 버튼 연타 방지, 폼 제출
+```
+
+- **기본값**: `false`
+
+### `trailing`
+
+마지막 호출 후 지연 시간 뒤 실행 여부
+
+```tsx
+// trailing: true (기본) → 마지막 호출 후 실행
+const debounced = useDebouncedCallback(fn, 300);
+
+// 사용 사례: 검색 자동완성, 입력 검증
+```
+
+- **기본값**: `true`
+
+### `maxWait`
+
+최대 대기 시간. 이 시간이 지나면 강제로 실행됩니다.
+
+```tsx
+// maxWait: 5000 → 최대 5초마다 강제 실행
+const debounced = useDebouncedCallback(save, 1000, { maxWait: 5000 });
+
+// 사용 사례: 자동 저장, 주기적 동기화
+```
+
+- **기본값**: `undefined`
+
+---
+
+## 옵션 조합
+
+### 기본 (Trailing만)
+
+```tsx
+useDebouncedCallback(fn, 300);
+// = { leading: false, trailing: true }
+
+// 입력 멈춘 후 300ms 후 실행
+```
+
+### Leading만
+
+```tsx
+useDebouncedCallback(fn, 1000, {
+  leading: true,
+  trailing: false,
+});
+
+// 첫 호출만 즉시 실행, 이후 1초간 무시
+```
+
+### Leading + Trailing
+
+```tsx
+useDebouncedCallback(fn, 200, {
+  leading: true,
+  trailing: true,
+});
+
+// 시작 시 즉시 실행 + 끝날 때도 실행
+```
+
+### Trailing + MaxWait
+
+```tsx
+useDebouncedCallback(fn, 1000, {
+  trailing: true,
+  maxWait: 5000,
+});
+
+// 일반: 1초 대기, 강제: 5초마다 실행
+```
+
+---
+
+## 성능 특성
+
+### 번들 크기
+
+- **~1.2 KB** (minified)
+- **~0.5 KB** (gzipped)
+
+### 메모리
+
+- 타이머 자동 정리 (메모리 누수 방지)
+- cleanup 함수로 언마운트 시 정리
+
+---
+
+## vs useDebounce
+
+| 특징              | useDebounce | useDebouncedCallback          |
+| ----------------- | ----------- | ----------------------------- |
+| **디바운스 대상** | 값          | 함수                          |
+| **반환**          | 값          | 함수                          |
+| **옵션**          | ❌          | ✅ leading, trailing, maxWait |
+| **사용 사례**     | 검색어      | 이벤트 핸들러                 |
+
+```tsx
+// useDebounce: 값 디바운스
+const debouncedValue = useDebounce(value, 300);
+
+// useDebouncedCallback: 함수 디바운스
+const debouncedFn = useDebouncedCallback(fn, 300);
+```
+
+---
+
+## TypeScript
+
+타입이 자동으로 추론됩니다.
+
+```tsx
+// ✅ 타입 추론
+const debouncedSearch = useDebouncedCallback((query: string, limit: number) => {
+  fetch(`/api?q=${query}&limit=${limit}`);
+}, 300);
+
+debouncedSearch('hello', 10); // ✅
+debouncedSearch('hello'); // ❌ 에러: limit 필요
+debouncedSearch(123, 10); // ❌ 에러: query는 string
+```
+
+---
+
+## 주의사항
+
+### ⚠️ 클린업
+
+컴포넌트 언마운트 시 자동으로 타이머가 정리됩니다.
+
+```tsx
+// 자동 cleanup됨 - 별도 처리 불필요
+const debounced = useDebouncedCallback(fn, 300);
+```
+
+---
+
+## 관련 문서
+
+- [useDebounce](/hooks/use-debounce) - 값 디바운스
+- [useThrottle](/hooks/use-throttle) - 쓰로틀링 (개발 예정)
+
+---
+
+## 참고 자료
+
+- [Lodash debounce](https://lodash.com/docs/#debounce)
+- [MDN: setTimeout](https://developer.mozilla.org/en-US/docs/Web/API/setTimeout)
