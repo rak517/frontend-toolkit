@@ -1,0 +1,47 @@
+# Hooks
+
+타입 안전하고 선언적인 React 훅 라이브러리
+
+## 포함된 훅
+
+### 상태 관리
+
+- [useDebounce](/hooks/use-debounce) - 디바운스된 값 반환
+- [useDebouncedCallback](/hooks/use-debounced-callback) - 디바운스된 콜백 함수
+
+### 유틸리티
+
+- [useCalendar](/hooks/use-calendar) - 달력 데이터 및 네비게이션
+- [useIsMounted](/hooks/use-is-mounted) - SSR 안전한 마운트 감지
+
+## 특징
+
+- ✅ TypeScript strict mode 100%
+- ✅ 제네릭으로 타입 자동 추론
+- ✅ Tree-shaking 지원
+- ✅ 자동 cleanup (메모리 누수 방지)
+
+## 설치
+
+```bash
+npm install @frontend-toolkit-js/hooks
+# or
+pnpm add @frontend-toolkit-js/hooks
+```
+
+## 빠른 시작
+
+```tsx
+import { useDebounce, useCalendar } from '@frontend-toolkit-js/hooks';
+
+function SearchInput() {
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
+
+  useEffect(() => {
+    fetchResults(debouncedSearch);
+  }, [debouncedSearch]);
+
+  return <input value={search} onChange={e => setSearch(e.target.value)} />;
+}
+```
