@@ -1,0 +1,47 @@
+# Components
+
+선언적이고 타입 안전한 React 컴포넌트 라이브러리
+
+## 포함된 컴포넌트
+
+### UI 컴포넌트
+
+- [InViewTrigger](/components/in-view-trigger) - Intersection Observer 기반 뷰포트 감지
+- [SuspenseBoundary](/components/suspense-boundary) - Suspense + ErrorBoundary 통합
+
+## 특징
+
+- ✅ 선언적 API와 가벼운 번들
+- ✅ React 외 의존성 없음 (zero-deps)
+- ✅ Strict TypeScript 지원
+- ✅ Tree-shaking 가능한 ESM 번들
+
+## 설치
+
+```bash
+npm install @frontend-toolkit-js/components
+# or
+pnpm add @frontend-toolkit-js/components
+```
+
+## 빠른 시작
+
+```tsx
+import {
+  InViewTrigger,
+  SuspenseBoundary,
+} from '@frontend-toolkit-js/components';
+
+function Example() {
+  return (
+    <SuspenseBoundary
+      pendingFallback={<Spinner />}
+      errorFallback={<ErrorState />}
+    >
+      <InViewTrigger onInView={() => console.log('보임!')}>
+        <Article />
+      </InViewTrigger>
+    </SuspenseBoundary>
+  );
+}
+```
