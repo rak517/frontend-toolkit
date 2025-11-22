@@ -10,9 +10,11 @@ export default {
   },
   hooks: {
     title: 'Hooks',
+    type: 'page',
   },
   components: {
     title: 'Components',
+    type: 'page',
   },
   utils: {
     title: 'Utils',
