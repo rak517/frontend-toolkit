@@ -1,0 +1,255 @@
+# useDebounce
+
+값의 변경을 지연시켜 디바운스된 값을 반환하는 Hook입니다.
+
+## 언제 사용하나요?
+
+- 🔍 검색 입력 자동완성
+- ⌨️ 입력 검증 (타이핑 완료 후 실행)
+- 📊 실시간 필터링
+- 💾 자동 저장 (입력 멈춘 후)
+
+## 기본 사용법
+
+```tsx
+import { useDebounce } from '@frontend-toolkit-js/hooks';
+
+function SearchInput() {
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
+
+  useEffect(() => {
+    if (debouncedSearch) {
+      // 300ms 후 검색 실행
+      fetchResults(debouncedSearch);
+    }
+  }, [debouncedSearch]);
+
+  return (
+    <input
+      value={search}
+      onChange={e => setSearch(e.target.value)}
+      placeholder="검색..."
+    />
+  );
+}
+```
+
+---
+
+## 주요 사용 사례
+
+### 1. 검색 자동완성
+
+```tsx
+function AutocompleteSearch() {
+  const [query, setQuery] = useState('');
+  const debouncedQuery = useDebounce(query, 500);
+
+  useEffect(() => {
+    if (debouncedQuery.length >= 2) {
+      fetch(`/api/search?q=${debouncedQuery}`)
+        .then(res => res.json())
+        .then(setResults);
+    }
+  }, [debouncedQuery]);
+
+  return <input onChange={e => setQuery(e.target.value)} />;
+}
+```
+
+### 2. 실시간 검증
+
+```tsx
+function UsernameInput() {
+  const [username, setUsername] = useState('');
+  const debouncedUsername = useDebounce(username, 300);
+  const [isAvailable, setIsAvailable] = useState(null);
+
+  useEffect(() => {
+    if (debouncedUsername) {
+      checkUsername(debouncedUsername).then(setIsAvailable);
+    }
+  }, [debouncedUsername]);
+
+  return (
+    <div>
+      <input onChange={e => setUsername(e.target.value)} />
+      {isAvailable !== null && <span>{isAvailable ? '✅' : '❌'}</span>}
+    </div>
+  );
+}
+```
+
+### 3. 윈도우 리사이즈
+
+```tsx
+function ResponsiveComponent() {
+  const [size, setSize] = useState(window.innerWidth);
+  const debouncedSize = useDebounce(size, 200);
+
+  useEffect(() => {
+    const handleResize = () => setSize(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return <div>Width: {debouncedSize}px</div>;
+}
+```
+
+---
+
+## API Reference
+
+```typescript
+function useDebounce<T>(value: T, delay: number): T;
+```
+
+### Parameters
+
+#### `value`
+
+디바운스할 값입니다.
+
+- **타입**: `T` (제네릭)
+- **예시**: `string`, `number`, `object` 등
+
+#### `delay`
+
+지연 시간(밀리초)입니다.
+
+- **타입**: `number`
+- **권장값**: 300-500ms
+
+### 반환값
+
+- **타입**: `T` (입력값과 동일한 타입)
+- **설명**: 지연된 값
+
+---
+
+## 동작 방식
+
+```
+사용자 입력: a → ab → abc → abcd
+              ↓
+useDebounce:  [300ms 대기]
+              ↓
+결과:         abcd (300ms 후 한 번만 업데이트)
+```
+
+**내부 구현:**
+
+```tsx
+export function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+```
+
+---
+
+## 성능 특성
+
+### 번들 크기
+
+- **~0.3 KB** (minified)
+- **~0.2 KB** (gzipped)
+
+### 메모리
+
+- useState 1개
+- setTimeout 1개 (자동 cleanup)
+
+### 렌더링
+
+- value 변경 시마다 타이머 재설정
+- delay 후 1회 리렌더링
+
+---
+
+## vs useDebouncedCallback
+
+| 특징     | useDebounce    | useDebouncedCallback       |
+| -------- | -------------- | -------------------------- |
+| **용도** | 값 디바운스    | 함수 디바운스              |
+| **사용** | 검색어, 입력값 | 이벤트 핸들러              |
+| **반환** | 값             | 함수                       |
+| **옵션** | ❌             | leading, trailing, maxWait |
+
+```tsx
+// useDebounce: 값 디바운스
+const debouncedValue = useDebounce(value, 300);
+
+// useDebouncedCallback: 함수 디바운스
+const debouncedFn = useDebouncedCallback(() => {...}, 300);
+```
+
+---
+
+## 주의사항
+
+### ⚠️ 초기값 처리
+
+```tsx
+// 초기 렌더링 시 즉시 반환
+const debouncedSearch = useDebounce('', 300);
+console.log(debouncedSearch); // '' (즉시)
+
+// 이후 변경은 지연됨
+```
+
+### ⚠️ delay 변경
+
+```tsx
+// delay가 자주 바뀌면 타이머가 계속 리셋됨
+const delay = Math.random() * 1000; // ❌ Bad
+const debouncedValue = useDebounce(value, delay);
+
+// delay는 고정값 사용
+const debouncedValue = useDebounce(value, 300); // ✅ Good
+```
+
+---
+
+## TypeScript
+
+```tsx
+// 타입 자동 추론
+const search = 'hello';
+const debouncedSearch = useDebounce(search, 300);
+//    ^? string
+
+const count = 42;
+const debouncedCount = useDebounce(count, 300);
+//    ^? number
+
+// 객체도 가능
+const filters = { category: 'tech', price: 100 };
+const debouncedFilters = useDebounce(filters, 500);
+//    ^? { category: string; price: number }
+```
+
+---
+
+## 관련 문서
+
+- [useDebouncedCallback](/hooks/use-debounced-callback) - 함수 디바운스
+- [useThrottle](/hooks/use-throttle) - 쓰로틀링 (개발 예정)
+
+---
+
+## 참고 자료
+
+- [Lodash debounce](https://lodash.com/docs/#debounce)
+- [MDN: setTimeout](https://developer.mozilla.org/en-US/docs/Web/API/setTimeout)
