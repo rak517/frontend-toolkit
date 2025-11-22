@@ -1,0 +1,672 @@
+# useCalendar
+
+선언적이고 타입 안전한 달력 Hook입니다. UI는 완전히 자유롭게 구성하고, 데이터와 로직만 제공받습니다.
+
+## 왜 만들었나요?
+
+기존 달력 라이브러리들은 **UI가 강제**되거나, **date 계산 로직을 직접 구현**해야 하는 불편함이 있었습니다.
+
+```tsx
+// ❌ 기존 방식 1: UI가 강제됨
+<ReactCalendar />; // 스타일 커스터마이징 어려움
+
+// ❌ 기존 방식 2: 로직을 직접 구현
+const [currentMonth, setCurrentMonth] = useState(new Date());
+const daysInMonth = getDaysInMonth(currentMonth); // 직접 계산
+const firstDayOfWeek = getDay(startOfMonth(currentMonth)); // 복잡...
+// 이전달/다음달 날짜는...? 😱
+
+// ✅ useCalendar: 데이터만 받고, UI는 자유롭게
+const cal = useCalendar();
+// cal.days → 42개 날짜 (이전달+현재달+다음달 포함)
+// cal.prev(), cal.next() → 네비게이션
+// 나머지는 내 마음대로!
+```
+
+---
+
+## 주요 특징
+
+### 1. Headless UI (UI 완전 자유)
+
+스타일, 레이아웃, 애니메이션 모두 직접 제어할 수 있습니다.
+
+### 2. 타입 안전성
+
+TypeScript로 작성되어 IDE 자동완성과 타입 체크를 제공합니다.
+
+### 3. SSR 안전
+
+Next.js, Remix 등 SSR 환경에서도 hydration 에러 없이 동작합니다.
+
+### 4. 성능 최적화
+
+불필요한 재계산을 방지하고, 안정적인 참조를 유지합니다.
+
+---
+
+## 설치
+
+```bash
+npm install @frontend-toolkit-js/hooks
+# or
+pnpm add @frontend-toolkit-js/hooks
+```
+
+---
+
+## 기본 사용법
+
+### 1. 가장 간단한 예제
+
+```tsx
+import { useCalendar } from '@frontend-toolkit-js/hooks';
+
+function MyCalendar() {
+  const cal = useCalendar();
+
+  return (
+    <div>
+      {/* 헤더: 이전/다음 버튼 */}
+      <div>
+        <button onClick={cal.prev}>◀ 이전</button>
+        <h2>
+          {cal.currentDate.toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: 'long',
+          })}
+        </h2>
+        <button onClick={cal.next}>다음 ▶</button>
+      </div>
+
+      <button onClick={cal.today}>오늘</button>
+
+      {/* 요일 헤더 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+        {cal.weekdays.map(weekday => (
+          <div key={weekday.index}>{weekday.label}</div>
+        ))}
+      </div>
+
+      {/* 날짜 그리드 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+        {cal.days.map((day, i) => (
+          <div
+            key={i}
+            style={{
+              opacity: day.isCurrentMonth ? 1 : 0.3,
+              fontWeight: day.isToday ? 'bold' : 'normal',
+              color: day.isWeekend ? 'red' : 'black',
+            }}
+          >
+            {day.day}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## API Reference
+
+### Options
+
+```typescript
+interface UseCalendarOptions {
+  defaultDate?: Date | string | number;
+  weekStartsOn?: 0 | 1;
+  onChange?: (date: Date) => void;
+}
+```
+
+#### `defaultDate`
+
+초기 표시할 날짜입니다. 다양한 형식을 지원합니다.
+
+```tsx
+// Date 객체
+useCalendar({ defaultDate: new Date(2024, 0, 15) });
+
+// ISO 문자열
+useCalendar({ defaultDate: '2024-01-15' });
+
+// 년-월만 (일은 자동으로 1일)
+useCalendar({ defaultDate: '2024-01' });
+
+// timestamp
+useCalendar({ defaultDate: 1705276800000 });
+
+// URL에서 가져오기
+const params = new URLSearchParams(window.location.search);
+useCalendar({ defaultDate: params.get('date') });
+```
+
+- **타입:** `Date | string | number`
+- **기본값:** `new Date()` (오늘)
+
+#### `weekStartsOn`
+
+주의 시작 요일을 설정합니다.
+
+```tsx
+// 일요일 시작 (한국 달력)
+useCalendar({ weekStartsOn: 0 });
+
+// 월요일 시작 (ISO 8601 표준)
+useCalendar({ weekStartsOn: 1 });
+```
+
+- **타입:** `0 | 1`
+- **기본값:** `0` (일요일)
+
+#### `onChange`
+
+날짜가 변경될 때 호출되는 콜백입니다.
+
+```tsx
+useCalendar({
+  onChange: date => {
+    console.log('날짜 변경:', date);
+
+    // URL 업데이트
+    const params = new URLSearchParams();
+    params.set('date', format(date, 'yyyy-MM'));
+    window.history.pushState({}, '', `?${params}`);
+  },
+});
+```
+
+- **타입:** `(date: Date) => void`
+- **기본값:** `undefined`
+
+---
+
+### 반환값
+
+```typescript
+{
+  days: CalendarDay[];
+  weekdays: Weekday[];
+  currentDate: Date;
+  prev: () => void;
+  next: () => void;
+  today: () => void;
+  setDate: (date: Date) => void;
+}
+```
+
+#### `days: CalendarDay[]`
+
+달력에 표시할 **42개의 날짜** 배열입니다. (6주 × 7일)
+
+```typescript
+interface CalendarDay {
+  date: Date; // 전체 Date 객체
+  day: number; // 일 (1-31)
+  isCurrentMonth: boolean; // 현재 표시 월에 속하는가?
+  isToday: boolean; // 오늘인가?
+  isWeekend: boolean; // 주말인가? (토/일)
+}
+```
+
+**왜 42개?**
+
+- 대부분의 달은 35개(5주)로 충분하지만, 6주가 필요한 경우도 있음
+- 고정 크기로 레이아웃 안정성 확보
+- 이전 달/다음 달 날짜도 포함하여 완전한 주 단위 표시
+
+```tsx
+// 이전 달 날짜 흐리게
+{
+  cal.days.map(day => (
+    <div style={{ opacity: day.isCurrentMonth ? 1 : 0.3 }}>{day.day}</div>
+  ));
+}
+```
+
+#### `weekdays: Weekday[]`
+
+요일 헤더를 위한 **7개의 요일** 배열입니다.
+
+```typescript
+interface Weekday {
+  date: Date; // Date 객체
+  label: string; // 짧은 레이블 ("월", "화", ...)
+  labelLong: string; // 긴 레이블 ("월요일", "화요일", ...)
+  index: number; // 요일 인덱스 (0-6)
+}
+```
+
+```tsx
+// 요일 헤더
+{
+  cal.weekdays.map(weekday => (
+    <div key={weekday.index}>
+      {weekday.label} {/* "월", "화", ... */}
+    </div>
+  ));
+}
+```
+
+#### `currentDate: Date`
+
+현재 표시 중인 달의 Date 객체입니다.
+
+```tsx
+<h2>
+  {cal.currentDate.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+  })}
+</h2>
+// → "2024년 1월"
+```
+
+#### `prev(): void`
+
+이전 달로 이동합니다.
+
+```tsx
+<button onClick={cal.prev}>◀ 이전 달</button>
+```
+
+#### `next(): void`
+
+다음 달로 이동합니다.
+
+```tsx
+<button onClick={cal.next}>다음 달 ▶</button>
+```
+
+#### `today(): void`
+
+오늘이 속한 달로 이동합니다.
+
+```tsx
+<button onClick={cal.today}>오늘</button>
+```
+
+#### `setDate(date: Date): void`
+
+특정 날짜로 직접 설정합니다.
+
+```tsx
+<button onClick={() => cal.setDate(new Date(2024, 11, 25))}>
+  크리스마스로 이동
+</button>
+```
+
+---
+
+## 실무 예제
+
+### 1. 날짜 선택 기능
+
+```tsx
+import { useState } from 'react';
+import { useCalendar } from '@frontend-toolkit-js/hooks';
+import { isSameDay } from 'date-fns';
+
+function DatePicker() {
+  const cal = useCalendar();
+  const [selected, setSelected] = useState<Date | null>(null);
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+        {cal.days.map((day, i) => {
+          const isSelected = selected && isSameDay(selected, day.date);
+
+          return (
+            <button
+              key={i}
+              onClick={() => setSelected(day.date)}
+              style={{
+                opacity: day.isCurrentMonth ? 1 : 0.3,
+                fontWeight: day.isToday ? 'bold' : 'normal',
+                backgroundColor: isSelected ? 'blue' : 'transparent',
+                color: isSelected ? 'white' : day.isWeekend ? 'red' : 'black',
+              }}
+            >
+              {day.day}
+            </button>
+          );
+        })}
+      </div>
+
+      {selected && <p>선택된 날짜: {selected.toLocaleDateString('ko-KR')}</p>}
+    </div>
+  );
+}
+```
+
+---
+
+### 2. URL 동기화 (Next.js App Router)
+
+```tsx
+'use client';
+
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useCalendar } from '@frontend-toolkit-js/hooks';
+import { format } from 'date-fns';
+
+function CalendarWithURL() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const cal = useCalendar({
+    defaultDate: searchParams.get('date') ?? undefined,
+    onChange: date => {
+      const params = new URLSearchParams(searchParams);
+      params.set('date', format(date, 'yyyy-MM'));
+      router.push(`?${params.toString()}`);
+    },
+  });
+
+  return (
+    <div>
+      <p>현재 URL: ?date={searchParams.get('date')}</p>
+      {/* 달력 UI */}
+    </div>
+  );
+}
+```
+
+**동작:**
+
+- 네비게이션 클릭 → URL 자동 업데이트
+- URL 직접 변경 → 달력 자동 반영
+- 브라우저 뒤로가기 → 이전 달 복원
+
+---
+
+### 3. 범위 선택 (체크인/체크아웃)
+
+```tsx
+import { useState } from 'react';
+import { useCalendar } from '@frontend-toolkit-js/hooks';
+import { isWithinInterval, isSameDay } from 'date-fns';
+
+function DateRangePicker() {
+  const cal = useCalendar();
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+
+  const handleClick = (date: Date) => {
+    if (!startDate || (startDate && endDate)) {
+      // 새로 시작
+      setStartDate(date);
+      setEndDate(null);
+    } else {
+      // 종료일 설정
+      if (date < startDate) {
+        setEndDate(startDate);
+        setStartDate(date);
+      } else {
+        setEndDate(date);
+      }
+    }
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+        {cal.days.map((day, i) => {
+          const isStart = startDate && isSameDay(startDate, day.date);
+          const isEnd = endDate && isSameDay(endDate, day.date);
+          const isInRange =
+            startDate &&
+            endDate &&
+            isWithinInterval(day.date, { start: startDate, end: endDate });
+
+          return (
+            <button
+              key={i}
+              onClick={() => handleClick(day.date)}
+              style={{
+                backgroundColor:
+                  isStart || isEnd ? 'blue' : isInRange ? 'lightblue' : 'white',
+              }}
+            >
+              {day.day}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+### 4. 이벤트 표시
+
+```tsx
+import { format } from 'date-fns';
+
+function EventCalendar() {
+  const cal = useCalendar();
+
+  const events = {
+    '2024-01-15': ['회의 1', '회의 2'],
+    '2024-01-20': ['생일 파티'],
+  };
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+      {cal.days.map((day, i) => {
+        const dateKey = format(day.date, 'yyyy-MM-dd');
+        const dayEvents = events[dateKey] || [];
+
+        return (
+          <div key={i}>
+            <div>{day.day}</div>
+            {dayEvents.map((event, j) => (
+              <div key={j} style={{ fontSize: '10px', color: 'blue' }}>
+                • {event}
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+```
+
+---
+
+## 고급 사용법
+
+### 월요일 시작 (ISO 8601)
+
+```tsx
+const cal = useCalendar({ weekStartsOn: 1 });
+
+// 요일 헤더: 월 화 수 목 금 토 일
+```
+
+### 다국어 지원
+
+```tsx
+import { ko, enUS } from 'date-fns/locale';
+
+// 한국어
+{
+  cal.weekdays.map(w => <div>{format(w.date, 'EEE', { locale: ko })}</div>);
+}
+// → 월, 화, 수, ...
+
+// 영어
+{
+  cal.weekdays.map(w => <div>{format(w.date, 'EEE', { locale: enUS })}</div>);
+}
+// → Mon, Tue, Wed, ...
+```
+
+---
+
+## 내부 동작 원리
+
+### 왜 42개 날짜를 생성하나요?
+
+- **5주만으로는 부족한 경우**가 있음 (예: 2025년 3월)
+- 고정 크기 → 레이아웃 shift 없음
+- 이전/다음 달 날짜 포함 → 완전한 주 단위 표시
+
+### 왜 Flat Array 구조인가요?
+
+```tsx
+// ❌ 2D 배열 (주 단위)
+const weeks = [
+  [day1, day2, ...],  // 1주
+  [day8, day9, ...],  // 2주
+  // ...
+];
+
+// ✅ Flat 배열 (1차원)
+const days = [day1, day2, ..., day42];
+```
+
+**이유:**
+
+- CSS Grid로 레이아웃하기 편함 (`gridTemplateColumns: 'repeat(7, 1fr)'`)
+- `.map()` 한 번으로 렌더링 가능
+- 메모리 효율적 (중첩 배열 없음)
+
+---
+
+## 성능 특성
+
+### 번들 크기
+
+**@frontend-toolkit-js/hooks 자체:**
+
+- **ESM**: 2.6 KB (minified) / **1.06 KB** (gzipped)
+- **CJS**: 2.8 KB (minified) / **1.05 KB** (gzipped)
+
+**Dependencies:**
+
+- `date-fns`: ~78 KB (필요한 함수만 tree-shaking)
+- `react`: peer dependency (별도 설치 필요)
+
+> **💡 참고:** date-fns는 tree-shaking을 지원하므로, 실제 사용하는 함수만 번들에 포함됩니다. useCalendar는 약 10개의 date-fns 함수를 사용합니다.
+
+### 렌더링 최적화
+
+- `useMemo`로 불필요한 재계산 방지
+- `useCallback`으로 안정적인 함수 참조
+- 날짜 변경 시에만 재계산
+
+### 메모리
+
+- useState 3개만 사용
+- 타이머 없음 (메모리 누수 없음)
+
+---
+
+## 주의사항
+
+### ❌ 흔한 실수
+
+**1. isCurrentMonth 체크 안 함**
+
+```tsx
+// ❌ 이전/다음 달 날짜도 진하게 표시됨
+{
+  cal.days.map(day => <div>{day.day}</div>);
+}
+
+// ✅ 이전/다음 달은 흐리게
+{
+  cal.days.map(day => (
+    <div style={{ opacity: day.isCurrentMonth ? 1 : 0.3 }}>{day.day}</div>
+  ));
+}
+```
+
+**2. key에 index만 사용**
+
+```tsx
+// ⚠️ 동작은 하지만 권장하지 않음
+{
+  cal.days.map((day, i) => <div key={i}>{day.day}</div>);
+}
+
+// ✅ 더 안정적
+{
+  cal.days.map((day, i) => (
+    <div key={`${day.date.getTime()}-${i}`}>{day.day}</div>
+  ));
+}
+```
+
+**3. onChange에서 무한 루프**
+
+```tsx
+// ❌ 무한 루프!
+const [date, setDate] = useState(new Date());
+
+useCalendar({
+  onChange: newDate => {
+    setDate(newDate);
+    cal.setDate(newDate); // ← 이러면 안 됨!
+  },
+});
+
+// ✅ onChange는 side effect만
+useCalendar({
+  onChange: newDate => {
+    // URL 업데이트, 로깅 등만
+    updateURL(newDate);
+  },
+});
+```
+
+---
+
+## TypeScript
+
+모든 타입이 자동으로 추론됩니다.
+
+```tsx
+const cal = useCalendar();
+//    ^? {
+//      days: CalendarDay[];
+//      weekdays: Weekday[];
+//      currentDate: Date;
+//      ...
+//    }
+
+cal.days.forEach(day => {
+  day.isToday;
+  //  ^? boolean (자동 추론)
+});
+```
+
+---
+
+## 브라우저 지원
+
+- Chrome, Firefox, Safari, Edge (최신 2년)
+- React 18+
+- date-fns 4.x
+
+---
+
+## 관련 문서
+
+- [useIsMounted](/hooks/use-is-mounted) - SSR 안전성
+- [useDebouncedCallback](/hooks/use-debounced-callback) - onChange 최적화
+
+---
+
+## 참고 자료
+
+- [date-fns 공식 문서](https://date-fns.org/)
+- [MDN: Date](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date)
