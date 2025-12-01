@@ -1,50 +1,60 @@
 # Frontend Toolkit
 
-🚧 **개발 중인 프로젝트입니다**
+반복되는 코드는 줄이고, 핵심 로직에만 집중하세요.
 
-선언적 API와 타입 안전성으로 개발자 경험을 극대화하는 React 라이브러리
+---
 
 ## 특징
 
-- ✅ **선언적 API**: 무엇을 할지만 표현
-- ✅ **타입 안전성**: TypeScript strict mode 100%
-- ✅ **측정 가능한 성능**: 정량적 수치로 개선 입증
-- ✅ **Tree-shaking**: 사용하는 것만 번들에 포함
-
-## 패키지
-
-### [@frontend-toolkit/hooks](/hooks)
-
-React 훅 라이브러리
+- ✅ **선언적 API** - 구현 세부사항 없이 의도만 표현
+- ✅ **타입 자동 추론** - 제네릭으로 타입 명시 불필요
+- ✅ **Zero Config** - 설치 후 바로 사용
 
 ```tsx
-import { useDebounce } from '@frontend-toolkit/hooks';
-
+// 보일러플레이트 없이 한 줄로
 const debouncedValue = useDebounce(value, 300);
 ```
 
-### [@frontend-toolkit/components](/components)
+---
 
-UI 컴포넌트 라이브러리
+## 패키지
 
-```tsx
-import { InViewTrigger } from '@frontend-toolkit/components';
+### [@frontend-toolkit-js/hooks](/hooks)
 
-<InViewTrigger onEnter={() => console.log('보임!')}>
-  <div>내용</div>
-</InViewTrigger>;
+| 훅                     | 설명                                            |
+| ---------------------- | ----------------------------------------------- |
+| `useDebounce`          | 값 디바운싱                                     |
+| `useDebouncedCallback` | 콜백 디바운싱 (leading, trailing, maxWait 옵션) |
+| `useCalendar`          | 달력 데이터 및 네비게이션                       |
+| `useIsMounted`         | 마운트 상태 확인                                |
+
+### [@frontend-toolkit-js/components](/components)
+
+| 컴포넌트           | 설명                          |
+| ------------------ | ----------------------------- |
+| `InViewTrigger`    | 뷰포트 진입/이탈 감지         |
+| `SuspenseBoundary` | Suspense + ErrorBoundary 통합 |
+| `ErrorBoundary`    | 에러 경계 처리                |
+
+---
+
+## 설치
+
+```bash
+pnpm add @frontend-toolkit-js/hooks @frontend-toolkit-js/components
 ```
 
-### [@frontend-toolkit/utils](/utils)
+---
 
-유틸리티 함수 라이브러리
+## 다음 단계
 
-```tsx
-import { groupBy } from '@frontend-toolkit/utils';
+- [시작하기](/getting-started) - 설치 및 기본 사용법
+- [Hooks](/hooks) - 훅 API 문서
+- [Components](/components) - 컴포넌트 API 문서
 
-const grouped = groupBy(users, 'role');
-```
+---
 
-## 시작하기
+## 링크
 
-[설치 가이드](/getting-started) 페이지에서 자세한 내용을 확인하세요.
+- [GitHub](https://github.com/rak517/frontend-toolkit)
+- [NPM](https://www.npmjs.com/package/@frontend-toolkit-js/hooks)

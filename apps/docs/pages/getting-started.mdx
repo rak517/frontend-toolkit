@@ -3,56 +3,69 @@
 ## 설치
 
 ```bash
-# npm
-npm install @frontend-toolkit/hooks @frontend-toolkit/components
+# pnpm (권장)
+pnpm add @frontend-toolkit-js/hooks @frontend-toolkit-js/components
 
-# pnpm
-pnpm add @frontend-toolkit/hooks @frontend-toolkit/components
+# npm
+npm install @frontend-toolkit-js/hooks @frontend-toolkit-js/components
 
 # yarn
-yarn add @frontend-toolkit/hooks @frontend-toolkit/components
+yarn add @frontend-toolkit-js/hooks @frontend-toolkit-js/components
 ```
 
-## 사용법
+필요한 패키지만 개별 설치도 가능합니다.
+
+---
+
+## 기본 사용법
 
 ### Hooks
 
 ```tsx
-import { useDebounce } from '@frontend-toolkit/hooks';
+import { useDebounce } from '@frontend-toolkit-js/hooks';
 
 function SearchInput() {
-  const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 300);
+  const [value, setValue] = useState('');
+  const debouncedValue = useDebounce(value, 300);
 
   useEffect(() => {
-    // API 호출
-    fetchResults(debouncedSearch);
-  }, [debouncedSearch]);
+    if (debouncedValue) {
+      fetchResults(debouncedValue);
+    }
+  }, [debouncedValue]);
 
-  return <input value={search} onChange={e => setSearch(e.target.value)} />;
+  return <input value={value} onChange={e => setValue(e.target.value)} />;
 }
 ```
 
 ### Components
 
 ```tsx
-import { InViewTrigger } from '@frontend-toolkit/components';
+import { InViewTrigger } from '@frontend-toolkit-js/components';
 
 function LazySection() {
   return (
-    <InViewTrigger onEnter={() => console.log('화면에 보임!')}>
+    <InViewTrigger onInView={() => console.log('화면에 보임!')}>
       <div>내용</div>
     </InViewTrigger>
   );
 }
 ```
 
+---
+
 ## TypeScript
 
-모든 패키지는 TypeScript로 작성되었으며 타입 정의가 포함되어 있습니다.
+모든 패키지는 TypeScript로 작성되었으며 타입이 자동 추론됩니다.
 
 ```tsx
-// 타입이 자동으로 추론됩니다
 const debouncedValue = useDebounce(searchTerm, 300);
-//    ^? string
+//    ^? string - 타입 명시 불필요!
 ```
+
+---
+
+## 다음 단계
+
+- [Hooks](/hooks) - useDebounce, useCalendar 등
+- [Components](/components) - InViewTrigger, SuspenseBoundary 등
