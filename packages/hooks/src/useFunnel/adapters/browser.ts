@@ -24,7 +24,7 @@ interface HistoryState<TContext> {
  */
 export function createBrowserAdapter<
   TStep extends string,
-  TContext extends Record<string, unknown>,
+  TContext extends object,
 >(
   initialState: FunnelState<TStep, TContext>,
   options: BrowserAdapterOptions = {}
@@ -37,10 +37,15 @@ export function createBrowserAdapter<
   // 내부 히스토리 인덱스 (canGoBack 판단용)
   let historyIndex = 0;
 
+  // 캐시된 상태 (useSyncExternalStore 무한 루프 방지)
+  let cachedState: FunnelState<TStep, TContext> = initialState;
+
   // 구독자 목록
   const listeners = new Set<() => void>();
 
   const notify = () => {
+    // 상태 캐시 업데이트
+    cachedState = readStateFromBrowser();
     listeners.forEach(listener => listener());
   };
 
@@ -82,6 +87,36 @@ export function createBrowserAdapter<
       : { funnelHistoryIndex: index };
   };
 
+  /**
+   * 브라우저에서 현재 상태 읽기 (내부용)
+   */
+  const readStateFromBrowser = (): FunnelState<TStep, TContext> => {
+    if (!isBrowser) {
+      return initialState;
+    }
+
+    const step = getStepFromUrl() ?? initialState.step;
+    const context = getContextFromState() ?? initialState.context;
+
+    return { step, context };
+  };
+
+  // popstate 이벤트 핸들러
+  const handlePopState = (event: PopStateEvent) => {
+    const state = event.state as HistoryState<TContext> | null;
+    if (state?.funnelHistoryIndex !== undefined) {
+      historyIndex = state.funnelHistoryIndex;
+    } else {
+      // funnelHistoryIndex가 없는 경우 (외부 페이지에서 돌아온 경우 등)
+      // 현재 URL에 queryKey가 있으면 0으로 리셋
+      const urlStep = getStepFromUrl();
+      if (urlStep) {
+        historyIndex = 0;
+      }
+    }
+    notify();
+  };
+
   // 초기화: URL에 스텝이 없으면 초기 스텝으로 설정
   if (isBrowser) {
     const urlStep = getStepFromUrl();
@@ -94,30 +129,30 @@ export function createBrowserAdapter<
         '',
         buildUrl(initialState.step)
       );
-    } else if (state?.funnelHistoryIndex !== undefined) {
-      // 기존 히스토리 인덱스 복원 (새로고침 시)
-      historyIndex = state.funnelHistoryIndex;
-    }
-
-    // popstate 이벤트 리스너 (뒤로가기/앞으로가기)
-    window.addEventListener('popstate', event => {
-      const state = event.state as HistoryState<TContext> | null;
+      cachedState = initialState;
+    } else {
+      // URL에서 상태 복원
       if (state?.funnelHistoryIndex !== undefined) {
         historyIndex = state.funnelHistoryIndex;
       }
-      notify();
-    });
+      cachedState = readStateFromBrowser();
+    }
   }
 
+  /**
+   * 어댑터 초기화 (useEffect에서 호출)
+   * popstate 이벤트 리스너 등록
+   */
+  const init = (): void => {
+    if (!isBrowser) return;
+    window.addEventListener('popstate', handlePopState);
+  };
+
+  /**
+   * 현재 상태 반환 (캐시된 값 반환)
+   */
   const getState = (): FunnelState<TStep, TContext> => {
-    if (!isBrowser) {
-      return initialState;
-    }
-
-    const step = getStepFromUrl() ?? initialState.step;
-    const context = getContextFromState() ?? initialState.context;
-
-    return { step, context };
+    return cachedState;
   };
 
   const push = (step: TStep, context?: Partial<TContext>): void => {
@@ -159,10 +194,9 @@ export function createBrowserAdapter<
   const back = (): void => {
     if (!isBrowser) return;
 
-    if (historyIndex > 0) {
-      window.history.back();
-      // historyIndex는 popstate 이벤트에서 업데이트됨
-    }
+    // historyIndex와 관계없이 window.history.back() 호출
+    // 실제 브라우저 히스토리가 있는지는 브라우저가 판단
+    window.history.back();
   };
 
   const canGoBack = (): boolean => {
@@ -176,6 +210,13 @@ export function createBrowserAdapter<
     };
   };
 
+  const cleanup = (): void => {
+    if (isBrowser) {
+      window.removeEventListener('popstate', handlePopState);
+    }
+    listeners.clear();
+  };
+
   return {
     getState,
     push,
@@ -183,5 +224,7 @@ export function createBrowserAdapter<
     back,
     canGoBack,
     subscribe,
+    init,
+    cleanup,
   };
 }
