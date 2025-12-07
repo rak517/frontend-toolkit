@@ -24,10 +24,7 @@ type UnionToIntersection<U> = (
 /**
  * 퍼널 상태
  */
-export interface FunnelState<
-  TStep extends string,
-  TContext extends Record<string, unknown>,
-> {
+export interface FunnelState<TStep extends string, TContext extends object> {
   step: TStep;
   context: TContext;
 }
@@ -35,10 +32,7 @@ export interface FunnelState<
 /**
  * 히스토리 관리 인터페이스
  */
-export interface FunnelHistory<
-  TStep extends string,
-  TContext extends Record<string, unknown>,
-> {
+export interface FunnelHistory<TStep extends string, TContext extends object> {
   /** 새 스텝으로 이동 (히스토리에 추가) */
   push(step: TStep, context?: Partial<TContext>): void;
   /** 현재 스텝 교체 (히스토리 유지) */
@@ -67,10 +61,7 @@ export interface FunnelProps<TStep extends string> {
 /**
  * useFunnel 옵션
  */
-export interface UseFunnelOptions<
-  TStep extends string,
-  TContext extends Record<string, unknown>,
-> {
+export interface UseFunnelOptions<TStep extends string, TContext extends object> {
   /** 초기 스텝 */
   initialStep: TStep;
   /** 초기 컨텍스트 */
@@ -82,10 +73,7 @@ export interface UseFunnelOptions<
 /**
  * useFunnel 반환 타입
  */
-export interface UseFunnelReturn<
-  TStep extends string,
-  TContext extends Record<string, unknown>,
-> {
+export interface UseFunnelReturn<TStep extends string, TContext extends object> {
   /** 현재 스텝 */
   currentStep: TStep;
   /** 누적된 컨텍스트 */
@@ -103,7 +91,7 @@ export interface UseFunnelReturn<
  */
 export interface FunnelContextValue<
   TStep extends string = string,
-  TContext extends Record<string, unknown> = Record<string, unknown>,
+  TContext extends object = Record<string, unknown>,
 > {
   currentStep: TStep;
   context: TContext;

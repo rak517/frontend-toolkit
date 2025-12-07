@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { FunnelProps, FunnelStepProps, FunnelContextValue } from './types';
+import type { FunnelProps, FunnelStepProps } from './types';
 import { FunnelContext } from './FunnelContext';
 
 /**
@@ -18,7 +18,7 @@ export function createStepComponent<TStep extends string>() {
  */
 export function createFunnelComponent<
   TStep extends string,
-  TContext extends Record<string, unknown>,
+  TContext extends object,
 >(currentStep: TStep, context: TContext) {
   return function Funnel({
     children,
@@ -34,13 +34,8 @@ export function createFunnelComponent<
       return null;
     }
 
-    const contextValue: FunnelContextValue<TStep, TContext> = {
-      currentStep,
-      context,
-    };
-
     return (
-      <FunnelContext.Provider value={contextValue}>
+      <FunnelContext.Provider value={{ currentStep, context }}>
         {targetStep}
       </FunnelContext.Provider>
     );

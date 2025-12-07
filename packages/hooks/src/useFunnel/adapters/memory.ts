@@ -19,7 +19,7 @@ const DEFAULT_MAX_HISTORY_SIZE = 50;
  */
 export function createMemoryAdapter<
   TStep extends string,
-  TContext extends Record<string, unknown>,
+  TContext extends object,
 >(
   initialState: FunnelState<TStep, TContext>,
   options: MemoryAdapterOptions = {}

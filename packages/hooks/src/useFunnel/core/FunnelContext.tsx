@@ -5,7 +5,10 @@ import type { FunnelContextValue } from './types';
  * Funnel 내부 컨텍스트
  * Step 컴포넌트가 현재 스텝 정보에 접근할 수 있도록 함
  */
-export const FunnelContext = createContext<FunnelContextValue | null>(null);
+export const FunnelContext = createContext<FunnelContextValue<
+  string,
+  object
+> | null>(null);
 
 /**
  * 현재 Funnel의 스텝 정보를 가져오는 Hook
@@ -24,7 +27,7 @@ export const FunnelContext = createContext<FunnelContextValue | null>(null);
  */
 export function useFunnelContext<
   TStep extends string = string,
-  TContext extends Record<string, unknown> = Record<string, unknown>,
+  TContext extends object = Record<string, unknown>,
 >(): FunnelContextValue<TStep, TContext> {
   const ctx = useContext(FunnelContext);
 
