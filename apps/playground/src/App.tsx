@@ -4,11 +4,12 @@ import { CalendarWithURLExample } from './CalendarWithURLExample';
 import { InViewTriggerExample } from './InViewTriggerExample';
 import { DebouncedCallbackExample } from './DebouncedCallbackExample';
 import { SuspenseBoundaryExample } from './SuspenseBoundaryExample';
+import { UseFunnelExample } from './UseFunnelExample';
 
 function App() {
   const [activeTab, setActiveTab] = useState<
-    'calendar' | 'inview' | 'debouncedCallback' | 'suspenseBoundary'
-  >('debouncedCallback');
+    'calendar' | 'inview' | 'debouncedCallback' | 'suspenseBoundary' | 'funnel'
+  >('funnel');
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'system-ui' }}>
@@ -79,6 +80,19 @@ function App() {
             ? '🔄 SuspenseBoundary'
             : '🔄 SuspenseBoundary'}
         </button>
+        <button
+          onClick={() => setActiveTab('funnel')}
+          style={{
+            padding: '8px 16px',
+            border: 'none',
+            background: activeTab === 'funnel' ? '#3b82f6' : 'transparent',
+            color: activeTab === 'funnel' ? 'white' : '#6b7280',
+            cursor: 'pointer',
+            borderRadius: '4px 4px 0 0',
+          }}
+        >
+          🚀 Funnel
+        </button>
       </div>
 
       <div style={{ marginTop: '2rem' }}>
@@ -91,6 +105,7 @@ function App() {
         {activeTab === 'inview' && <InViewTriggerExample />}
         {activeTab === 'debouncedCallback' && <DebouncedCallbackExample />}
         {activeTab === 'suspenseBoundary' && <SuspenseBoundaryExample />}
+        {activeTab === 'funnel' && <UseFunnelExample />}
       </div>
     </div>
   );
