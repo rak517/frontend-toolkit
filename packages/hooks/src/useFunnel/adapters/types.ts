@@ -9,10 +9,7 @@ import type { FunnelState } from '../core/types';
  * - storage: SessionStorage/LocalStorage 사용
  * - custom: 사용자 정의 (Next.js, React Router 등)
  */
-export interface FunnelAdapter<
-  TStep extends string,
-  TContext extends Record<string, unknown>,
-> {
+export interface FunnelAdapter<TStep extends string, TContext extends object> {
   /**
    * 현재 상태 읽기
    */
@@ -43,6 +40,19 @@ export interface FunnelAdapter<
    * @returns 구독 해제 함수
    */
   subscribe: (this: void, listener: () => void) => () => void;
+
+  /**
+   * 어댑터 초기화 (이벤트 리스너 등록 등)
+   * 선택적 메서드 - 브라우저 어댑터 등에서 사용
+   * useEffect 내부에서 호출됨
+   */
+  init?: (this: void) => void;
+
+  /**
+   * 어댑터 정리 (이벤트 리스너 해제 등)
+   * 선택적 메서드 - 브라우저 어댑터 등에서 사용
+   */
+  cleanup?: (this: void) => void;
 }
 
 /**
@@ -50,7 +60,7 @@ export interface FunnelAdapter<
  */
 export type CreateAdapter<TOptions = void> = <
   TStep extends string,
-  TContext extends Record<string, unknown>,
+  TContext extends object,
 >(
   initialState: FunnelState<TStep, TContext>,
   options?: TOptions

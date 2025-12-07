@@ -1,4 +1,4 @@
-import { useMemo, useRef, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import type {
   FunnelHistory,
   FunnelState,
@@ -14,7 +14,7 @@ import type { FunnelAdapter } from './adapters/types';
  */
 export interface UseFunnelOptionsWithAdapter<
   TStep extends string,
-  TContext extends Record<string, unknown>,
+  TContext extends object,
 > extends UseFunnelOptions<TStep, TContext> {
   /** 상태 관리 어댑터 (기본값: memory) */
   adapter?: (
@@ -71,7 +71,7 @@ export interface UseFunnelOptionsWithAdapter<
  */
 export function useFunnel<
   TStep extends string,
-  TContext extends Record<string, unknown> = Record<string, unknown>,
+  TContext extends object = Record<string, unknown>,
 >(
   steps: readonly TStep[],
   options: UseFunnelOptionsWithAdapter<TStep, TContext>
@@ -164,6 +164,14 @@ export function useFunnel<
     }),
     [adapter, steps, onStepChange]
   );
+
+  // 어댑터 초기화 및 cleanup
+  useEffect(() => {
+    adapter.init?.();
+    return () => {
+      adapter.cleanup?.();
+    };
+  }, [adapter]);
 
   // Step 컴포넌트 (한 번만 생성)
   const Step = useMemo(() => createStepComponent<TStep>(), []);
