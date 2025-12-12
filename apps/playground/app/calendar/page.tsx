@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useCalendar } from '@frontend-toolkit-js/hooks';
 import { useSearchParams, useRouter } from 'next/navigation';
 
@@ -269,7 +269,9 @@ export default function CalendarPage() {
       <h2>useCalendar Example</h2>
       <CalendarExample />
       <hr style={{ margin: '40px 0' }} />
-      <CalendarWithURLExample />
+      <Suspense fallback={<div>로딩 중...</div>}>
+        <CalendarWithURLExample />
+      </Suspense>
     </div>
   );
 }
