@@ -11,6 +11,12 @@ import { createBrowserAdapter, type QueryParamsAdapter } from './adapters';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Schema = Record<string, ParserBuilder<any>>;
 
+/**
+ * 스키마로부터 값 타입 추론
+ *
+ * - withDefault가 있으면 NonNullable 타입
+ * - 없으면 T | null 타입
+ */
 type InferValues<T extends Schema> = {
   [K in keyof T]: T[K] extends { defaultValue: infer V }
     ? V
@@ -19,14 +25,50 @@ type InferValues<T extends Schema> = {
       : never;
 };
 
+/** setParams 옵션 */
 interface SetParamsOptions {
+  /**
+   * 히스토리 처리 방식
+   * - 'push': 히스토리에 추가 (뒤로가기 가능)
+   * - 'replace': 현재 히스토리 교체 (기본값)
+   */
   history?: 'push' | 'replace';
 }
 
+/** useQueryParams 옵션 */
 interface UseQueryParamsOptions {
+  /**
+   * 쿼리 파라미터 어댑터
+   * 기본값: createBrowserAdapter()
+   */
   adapter?: QueryParamsAdapter;
 }
 
+/**
+ * URL 쿼리 파라미터를 선언적으로 관리하는 훅
+ *
+ * 스키마 기반으로 쿼리 파라미터를 타입 안전하게 읽고 쓸 수 있음
+ *
+ * @param schema - 파서 스키마 객체
+ * @param options - 훅 옵션
+ * @returns 파싱된 값들과 setParams 함수
+ *
+ * @example
+ * ```tsx
+ * const { page, search, sort, setParams } = useQueryParams({
+ *   page: parseAsInteger.withDefault(1),
+ *   search: parseAsString.withDefault(''),
+ *   sort: parseAsStringEnum(['latest', 'oldest']).withDefault('latest'),
+ * });
+ *
+ * // 값 읽기
+ * console.log(page); // 1 (기본값) 또는 URL의 ?page=N 값
+ *
+ * // 값 쓰기
+ * setParams({ page: 2 }); // URL을 ?page=2로 업데이트 (replace)
+ * setParams({ page: 2 }, { history: 'push' }); // 히스토리에 추가
+ * ```
+ */
 export function useQueryParams<T extends Schema>(
   schema: T,
   options?: UseQueryParamsOptions
