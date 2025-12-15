@@ -12,7 +12,9 @@ export function normalizeInput(value: ParserInput): string | null {
 
 export interface ParserBuilder<T> extends Parser<T> {
   defaultValue?: T;
-  withDefault: (defaultValue: NonNullable<T>) => ParserBuilder<NonNullable<T>>;
+  withDefault: (
+    defaultValue: NonNullable<T>
+  ) => ParserBuilder<NonNullable<T>> & { defaultValue: NonNullable<T> };
 }
 
 export function createParser<T>(parser: Parser<T>): ParserBuilder<T> {
@@ -23,11 +25,11 @@ export function createParser<T>(parser: Parser<T>): ParserBuilder<T> {
       return {
         ...this,
         defaultValue,
-        parse: (value: string | null) => {
+        parse: (value: ParserInput) => {
           const parsed = parser.parse(value);
           return parsed ?? defaultValue;
         },
-      } as ParserBuilder<NonNullable<T>>;
+      } as ParserBuilder<NonNullable<T>> & { defaultValue: NonNullable<T> };
     },
   };
 }
