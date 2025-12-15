@@ -3,3 +3,4 @@ export * from './useIsMounted';
 export * from './useDebounce';
 export * from './useDebouncedCallback';
 export * from './useFunnel';
+export * from './useQueryParams';
