@@ -1,6 +1,13 @@
+export type ParserInput = string | string[] | null;
+
 export interface Parser<T> {
-  parse: (value: string | null) => T | null;
+  parse: (value: ParserInput) => T | null;
   serialize: (value: T) => string;
+}
+
+export function normalizeInput(value: ParserInput): string | null {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value;
 }
 
 export interface ParserBuilder<T> extends Parser<T> {
