@@ -1,12 +1,32 @@
 import { createParser, normalizeInput, type Parser, type ParserInput } from '../core';
 
-// 문자열
+/**
+ * 문자열 파서
+ *
+ * @example
+ * ```tsx
+ * const { name } = useQueryParams({
+ *   name: parseAsString.withDefault(''),
+ * });
+ * // ?name=hello -> 'hello'
+ * ```
+ */
 export const parseAsString = createParser<string | null>({
   parse: value => normalizeInput(value),
   serialize: value => value ?? '',
 });
 
-// 정수
+/**
+ * 정수 파서
+ *
+ * @example
+ * ```tsx
+ * const { page } = useQueryParams({
+ *   page: parseAsInteger.withDefault(1),
+ * });
+ * // ?page=5 -> 5
+ * ```
+ */
 export const parseAsInteger = createParser<number | null>({
   parse: value => {
     const v = normalizeInput(value);
@@ -17,7 +37,17 @@ export const parseAsInteger = createParser<number | null>({
   serialize: value => String(value),
 });
 
-// 실수
+/**
+ * 실수(부동소수점) 파서
+ *
+ * @example
+ * ```tsx
+ * const { price } = useQueryParams({
+ *   price: parseAsFloat.withDefault(0),
+ * });
+ * // ?price=19.99 -> 19.99
+ * ```
+ */
 export const parseAsFloat = createParser<number | null>({
   parse: value => {
     const v = normalizeInput(value);
@@ -28,7 +58,17 @@ export const parseAsFloat = createParser<number | null>({
   serialize: value => String(value),
 });
 
-// 불리언
+/**
+ * 불리언 파서
+ *
+ * @example
+ * ```tsx
+ * const { showCompleted } = useQueryParams({
+ *   showCompleted: parseAsBoolean.withDefault(false),
+ * });
+ * // ?showCompleted=true -> true
+ * ```
+ */
 export const parseAsBoolean = createParser<boolean | null>({
   parse: value => {
     const v = normalizeInput(value);
@@ -39,7 +79,17 @@ export const parseAsBoolean = createParser<boolean | null>({
   serialize: value => String(value),
 });
 
-// ISO 날짜
+/**
+ * ISO 날짜 파서 (YYYY-MM-DD)
+ *
+ * @example
+ * ```tsx
+ * const { startDate } = useQueryParams({
+ *   startDate: parseAsIsoDate,
+ * });
+ * // ?startDate=2024-01-15 -> Date 객체
+ * ```
+ */
 export const parseAsIsoDate = createParser<Date | null>({
   parse: value => {
     const v = normalizeInput(value);
@@ -50,7 +100,17 @@ export const parseAsIsoDate = createParser<Date | null>({
   serialize: value => value?.toISOString().split('T')[0] ?? '',
 });
 
-// ISO DateTime
+/**
+ * ISO DateTime 파서 (YYYY-MM-DDTHH:mm:ss.sssZ)
+ *
+ * @example
+ * ```tsx
+ * const { createdAt } = useQueryParams({
+ *   createdAt: parseAsIsoDateTime,
+ * });
+ * // ?createdAt=2024-01-15T09:30:00.000Z -> Date 객체
+ * ```
+ */
 export const parseAsIsoDateTime = createParser<Date | null>({
   parse: value => {
     const v = normalizeInput(value);
@@ -61,7 +121,17 @@ export const parseAsIsoDateTime = createParser<Date | null>({
   serialize: value => value?.toISOString() ?? '',
 });
 
-// JSON
+/**
+ * JSON 파서
+ *
+ * @example
+ * ```tsx
+ * const { filters } = useQueryParams({
+ *   filters: parseAsJson<{ status: string; priority: number }>(),
+ * });
+ * // ?filters={"status":"active","priority":1} -> { status: 'active', priority: 1 }
+ * ```
+ */
 export function parseAsJson<T>() {
   return createParser<T | null>({
     parse: value => {
@@ -77,7 +147,21 @@ export function parseAsJson<T>() {
   });
 }
 
-// 문자열 Enum
+/**
+ * 문자열 Enum 파서
+ *
+ * @param values - 허용되는 값 목록
+ *
+ * @example
+ * ```tsx
+ * const sortOptions = ['latest', 'oldest', 'popular'] as const;
+ * const { sort } = useQueryParams({
+ *   sort: parseAsStringEnum(sortOptions).withDefault('latest'),
+ * });
+ * // ?sort=oldest -> 'oldest'
+ * // ?sort=invalid -> 'latest' (기본값)
+ * ```
+ */
 export function parseAsStringEnum<T extends string>(values: readonly T[]) {
   return createParser<T | null>({
     parse: value => {
@@ -89,12 +173,36 @@ export function parseAsStringEnum<T extends string>(values: readonly T[]) {
   });
 }
 
-// 리터럴 (stringEnum과 동일하지만 의미적 구분)
+/**
+ * 리터럴 파서 (parseAsStringEnum의 별칭)
+ *
+ * @param values - 허용되는 값 목록
+ *
+ * @example
+ * ```tsx
+ * const { status } = useQueryParams({
+ *   status: parseAsLiteral(['active', 'inactive'] as const),
+ * });
+ * ```
+ */
 export function parseAsLiteral<T extends string>(values: readonly T[]) {
   return parseAsStringEnum(values);
 }
 
-// 배열 (쉼표 구분)
+/**
+ * 배열 파서 (쉼표 구분)
+ *
+ * @param itemParser - 배열 아이템을 파싱할 파서
+ * @param separator - 구분자 (기본값: ',')
+ *
+ * @example
+ * ```tsx
+ * const { tags } = useQueryParams({
+ *   tags: parseAsArray(parseAsString).withDefault([]),
+ * });
+ * // ?tags=react,typescript,nextjs -> ['react', 'typescript', 'nextjs']
+ * ```
+ */
 export function parseAsArray<T>(itemParser: Parser<T>, separator = ',') {
   return createParser<T[]>({
     parse: value => {
@@ -109,7 +217,21 @@ export function parseAsArray<T>(itemParser: Parser<T>, separator = ',') {
   });
 }
 
-// 배열 (복수 파라미터 - 네이티브)
+/**
+ * 네이티브 배열 파서 (복수 파라미터)
+ *
+ * URL에서 같은 키로 여러 값을 전달할 때 사용
+ *
+ * @param itemParser - 배열 아이템을 파싱할 파서
+ *
+ * @example
+ * ```tsx
+ * const { ids } = useQueryParams({
+ *   ids: parseAsNativeArray(parseAsInteger).withDefault([]),
+ * });
+ * // ?ids=1&ids=2&ids=3 -> [1, 2, 3]
+ * ```
+ */
 export function parseAsNativeArray<T>(itemParser: Parser<T>) {
   return createParser<T[]>({
     parse: (value: ParserInput) => {
