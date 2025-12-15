@@ -1,0 +1,52 @@
+/**
+ * 쿼리 파라미터 어댑터 인터페이스
+ *
+ * URL 쿼리 파라미터 상태 관리를 추상화하여 다양한 환경에서 사용 가능하도록 함
+ * - browser: Browser History API 사용 (window.location + history)
+ * - next: Next.js router 사용 (나중에 구현)
+ * - react-router: React Router 사용 (나중에 구현)
+ */
+export interface QueryParamsAdapter {
+  /**
+   * 현재 쿼리 파라미터 가져오기
+   */
+  getSearchParams: () => URLSearchParams;
+
+  /**
+   * 쿼리 파라미터 업데이트 (히스토리에 추가)
+   */
+  push: (params: URLSearchParams) => void;
+
+  /**
+   * 쿼리 파라미터 업데이트 (히스토리 교체)
+   */
+  replace: (params: URLSearchParams) => void;
+
+  /**
+   * 상태 변경 구독
+   * @returns 구독 해제 함수
+   */
+  subscribe: (listener: () => void) => () => void;
+
+  /**
+   * 어댑터 초기화 (이벤트 리스너 등록 등)
+   * useEffect 내부에서 호출됨
+   */
+  init?: () => void;
+
+  /**
+   * 어댑터 정리 (이벤트 리스너 해제 등)
+   */
+  cleanup?: () => void;
+}
+
+/**
+ * Browser 어댑터 옵션
+ */
+export interface BrowserAdapterOptions {
+  /**
+   * URL 업데이트 시 스크롤 위치 유지 여부
+   * @default false
+   */
+  scroll?: boolean;
+}
