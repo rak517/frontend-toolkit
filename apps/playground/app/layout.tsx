@@ -13,6 +13,7 @@ const navItems = [
   { href: '/debounce', label: 'DebouncedCallback' },
   { href: '/suspense', label: 'SuspenseBoundary' },
   { href: '/funnel', label: 'Funnel' },
+  { href: '/query-params', label: 'QueryParams' },
 ];
 
 export default function RootLayout({
