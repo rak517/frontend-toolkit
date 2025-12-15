@@ -6,6 +6,7 @@ import {
   parseAsString,
   parseAsBoolean,
   parseAsStringEnum,
+  useIsMounted,
 } from '@frontend-toolkit-js/hooks';
 
 const sortOptions = ['latest', 'oldest', 'popular'] as const;
@@ -48,6 +49,7 @@ const secondaryButton: React.CSSProperties = {
 };
 
 export default function QueryParamsPage() {
+  const isMounted = useIsMounted();
   const { page, search, sort, showCompleted, setParams } = useQueryParams({
     page: parseAsInteger.withDefault(1),
     search: parseAsString.withDefault(''),
@@ -73,7 +75,8 @@ export default function QueryParamsPage() {
           {JSON.stringify({ page, search, sort, showCompleted }, null, 2)}
         </pre>
         <p style={{ color: '#6b7280', fontSize: '14px' }}>
-          현재 URL: <code>{typeof window !== 'undefined' ? window.location.search || '(없음)' : ''}</code>
+          현재 URL:{' '}
+          <code>{isMounted ? window.location.search || '(없음)' : ''}</code>
         </p>
       </div>
 
@@ -96,10 +99,7 @@ export default function QueryParamsPage() {
           >
             다음
           </button>
-          <button
-            onClick={() => setParams({ page: 1 })}
-            style={primaryButton}
-          >
+          <button onClick={() => setParams({ page: 1 })} style={primaryButton}>
             첫 페이지로
           </button>
         </div>
@@ -111,7 +111,7 @@ export default function QueryParamsPage() {
           type="text"
           placeholder="검색어 입력..."
           value={search}
-          onChange={(e) => setParams({ search: e.target.value, page: 1 })}
+          onChange={e => setParams({ search: e.target.value, page: 1 })}
           style={{ ...inputStyle, width: '200px' }}
         />
         {search && (
@@ -127,7 +127,7 @@ export default function QueryParamsPage() {
       <div style={cardStyle}>
         <h3 style={{ marginTop: 0 }}>정렬</h3>
         <div style={{ display: 'flex', gap: '8px' }}>
-          {sortOptions.map((option) => (
+          {sortOptions.map(option => (
             <button
               key={option}
               onClick={() => setParams({ sort: option, page: 1 })}
@@ -149,7 +149,7 @@ export default function QueryParamsPage() {
           <input
             type="checkbox"
             checked={showCompleted}
-            onChange={(e) => setParams({ showCompleted: e.target.checked })}
+            onChange={e => setParams({ showCompleted: e.target.checked })}
           />
           <span>완료된 항목 표시</span>
         </label>
