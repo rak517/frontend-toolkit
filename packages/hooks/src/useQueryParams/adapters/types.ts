@@ -13,6 +13,13 @@ export interface QueryParamsAdapter {
   getSearchParams: () => URLSearchParams;
 
   /**
+   * SSR용 스냅샷 가져오기
+   * useSyncExternalStore의 getServerSnapshot으로 사용
+   * 캐싱된 값을 반환해야 무한 루프 방지
+   */
+  getServerSnapshot: () => URLSearchParams;
+
+  /**
    * 쿼리 파라미터 업데이트 (히스토리에 추가)
    */
   push: (params: URLSearchParams) => void;

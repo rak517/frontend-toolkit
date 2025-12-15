@@ -40,7 +40,7 @@ export function useQueryParams<T extends Schema>(
   const searchParams = useSyncExternalStore(
     adapter.subscribe,
     adapter.getSearchParams,
-    () => new URLSearchParams()
+    adapter.getServerSnapshot
   );
 
   useEffect(() => {
