@@ -18,6 +18,9 @@ import type { BrowserAdapterOptions, QueryParamsAdapter } from './types';
  * });
  * ```
  */
+// SSR용 빈 URLSearchParams (캐싱하여 무한 루프 방지)
+const EMPTY_PARAMS = new URLSearchParams();
+
 export function createBrowserAdapter(
   options: BrowserAdapterOptions = {}
 ): QueryParamsAdapter {
@@ -144,8 +147,17 @@ export function createBrowserAdapter(
     listeners.clear();
   };
 
+  /**
+   * SSR용 스냅샷 반환
+   * 캐싱된 빈 URLSearchParams를 반환하여 무한 루프 방지
+   */
+  const getServerSnapshot = (): URLSearchParams => {
+    return EMPTY_PARAMS;
+  };
+
   return {
     getSearchParams,
+    getServerSnapshot,
     push,
     replace,
     subscribe,
