@@ -1,6 +1,10 @@
 // Hook
 export { useQueryParams } from './useQueryParams';
 
+// Provider
+export { QueryParamsProvider } from './QueryParamsProvider';
+export type { QueryParamsProviderProps } from './QueryParamsProvider';
+
 // Parsers
 export {
   parseAsString,
