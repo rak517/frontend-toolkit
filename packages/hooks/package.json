@@ -10,6 +10,21 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./useQueryParams/adapters/next-app": {
+      "types": "./dist/useQueryParams/adapters/next-app.d.ts",
+      "import": "./dist/useQueryParams/adapters/next-app.mjs",
+      "require": "./dist/useQueryParams/adapters/next-app.js"
+    },
+    "./useQueryParams/adapters/next-pages": {
+      "types": "./dist/useQueryParams/adapters/next-pages.d.ts",
+      "import": "./dist/useQueryParams/adapters/next-pages.mjs",
+      "require": "./dist/useQueryParams/adapters/next-pages.js"
+    },
+    "./useQueryParams/adapters/react-router": {
+      "types": "./dist/useQueryParams/adapters/react-router.d.ts",
+      "import": "./dist/useQueryParams/adapters/react-router.mjs",
+      "require": "./dist/useQueryParams/adapters/react-router.js"
     }
   },
   "files": [
@@ -47,12 +62,23 @@
   "author": "rak517",
   "license": "MIT",
   "peerDependencies": {
-    "react": ">=18.0.0"
+    "next": ">=13.0.0",
+    "react": ">=18.0.0",
+    "react-router-dom": ">=6.0.0"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    },
+    "react-router-dom": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.18",
     "eslint": "^9.18.0",
+    "next": "^16.0.10",
     "react": "^18.3.1",
     "tsup": "^8.5.0",
     "typescript": "^5.9.2",
