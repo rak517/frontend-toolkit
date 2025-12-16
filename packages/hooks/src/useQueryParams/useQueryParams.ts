@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useSyncExternalStore,
-} from 'react';
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { ParserBuilder } from './core';
 import { createBrowserAdapter, type QueryParamsAdapter } from './adapters';
 import { useQueryParamsContext } from './context';
@@ -75,12 +69,9 @@ export function useQueryParams<T extends Schema>(
   options?: UseQueryParamsOptions
 ) {
   const contextAdapter = useQueryParamsContext();
-  const adapterRef = useRef<QueryParamsAdapter | null>(null);
-  if (!adapterRef.current) {
-    adapterRef.current =
-      options?.adapter ?? contextAdapter ?? createBrowserAdapter();
-  }
-  const adapter = adapterRef.current;
+  const defaultAdapter = useMemo(() => createBrowserAdapter(), []);
+
+  const adapter = options?.adapter ?? contextAdapter ?? defaultAdapter;
 
   const searchParams = useSyncExternalStore(
     adapter.subscribe,
