@@ -1,7 +1,12 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: [
+    'src/index.ts',
+    'src/useQueryParams/adapters/next-app.ts',
+    'src/useQueryParams/adapters/next-pages.ts',
+    'src/useQueryParams/adapters/react-router.ts',
+  ],
   format: ['cjs', 'esm'],
   dts: {
     resolve: true,
@@ -14,5 +19,5 @@ export default defineConfig({
   clean: true,
   treeshake: true,
   minify: true,
-  external: ['react'],
+  external: ['react', 'next', 'react-router-dom'],
 });
