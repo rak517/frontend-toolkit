@@ -7,6 +7,7 @@ import {
 } from 'react';
 import type { ParserBuilder } from './core';
 import { createBrowserAdapter, type QueryParamsAdapter } from './adapters';
+import { useQueryParamsContext } from './context';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Schema = Record<string, ParserBuilder<any>>;
@@ -73,9 +74,11 @@ export function useQueryParams<T extends Schema>(
   schema: T,
   options?: UseQueryParamsOptions
 ) {
+  const contextAdapter = useQueryParamsContext();
   const adapterRef = useRef<QueryParamsAdapter | null>(null);
   if (!adapterRef.current) {
-    adapterRef.current = options?.adapter ?? createBrowserAdapter();
+    adapterRef.current =
+      options?.adapter ?? contextAdapter ?? createBrowserAdapter();
   }
   const adapter = adapterRef.current;
 
