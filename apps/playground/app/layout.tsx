@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import './globals.css';
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'Frontend Toolkit Playground',
@@ -53,7 +54,9 @@ export default function RootLayout({
             ))}
           </nav>
 
-          <main style={{ marginTop: '2rem' }}>{children}</main>
+          <main style={{ marginTop: '2rem' }}>
+            <Providers>{children}</Providers>
+          </main>
         </div>
       </body>
     </html>
