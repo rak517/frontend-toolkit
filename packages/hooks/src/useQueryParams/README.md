@@ -120,6 +120,101 @@ const { name } = useQueryParams({
 });
 ```
 
+## Framework Adapters
+
+프레임워크별 어댑터를 제공합니다. Provider 패턴 또는 직접 전달 방식으로 사용할 수 있습니다.
+
+### Next.js App Router
+
+```tsx
+// app/providers.tsx
+'use client';
+
+import { Suspense, type ReactNode } from 'react';
+import { QueryParamsProvider } from '@frontend-toolkit-js/hooks';
+import { useNextAppAdapter } from '@frontend-toolkit-js/hooks/useQueryParams/adapters/next-app';
+
+function QueryParamsProviderInner({ children }: { children: ReactNode }) {
+  const adapter = useNextAppAdapter();
+  return (
+    <QueryParamsProvider adapter={adapter}>
+      {children}
+    </QueryParamsProvider>
+  );
+}
+
+export function Providers({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={null}>
+      <QueryParamsProviderInner>{children}</QueryParamsProviderInner>
+    </Suspense>
+  );
+}
+```
+
+```tsx
+// app/layout.tsx
+import { Providers } from './providers';
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+```tsx
+// 컴포넌트에서 사용 (adapter 생략 가능)
+const { page } = useQueryParams({ page: parseAsInteger.withDefault(1) });
+```
+
+### Next.js Pages Router
+
+```tsx
+// _app.tsx
+import { QueryParamsProvider } from '@frontend-toolkit-js/hooks';
+import { useNextPagesAdapter } from '@frontend-toolkit-js/hooks/useQueryParams/adapters/next-pages';
+
+function MyApp({ Component, pageProps }) {
+  const adapter = useNextPagesAdapter();
+  return (
+    <QueryParamsProvider adapter={adapter}>
+      <Component {...pageProps} />
+    </QueryParamsProvider>
+  );
+}
+```
+
+### React Router v6+
+
+```tsx
+// App.tsx
+import { QueryParamsProvider } from '@frontend-toolkit-js/hooks';
+import { useReactRouterAdapter } from '@frontend-toolkit-js/hooks/useQueryParams/adapters/react-router';
+
+function Providers({ children }) {
+  const adapter = useReactRouterAdapter();
+  return (
+    <QueryParamsProvider adapter={adapter}>
+      {children}
+    </QueryParamsProvider>
+  );
+}
+```
+
+### 어댑터 옵션
+
+| 어댑터 | 옵션 | 기본값 | 설명 |
+|--------|------|--------|------|
+| `useNextAppAdapter` | `scroll` | `false` | URL 변경 시 스크롤 초기화 |
+| `useNextPagesAdapter` | `scroll` | `false` | URL 변경 시 스크롤 초기화 |
+| | `shallow` | `true` | getServerSideProps 재실행 방지 |
+| `useReactRouterAdapter` | `preventScrollReset` | `false` | 스크롤 위치 유지 |
+
 ## Custom Adapter
 
 기본적으로 Browser History API를 사용하지만, 커스텀 어댑터를 전달할 수 있습니다.
