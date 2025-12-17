@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0
+
+### Minor Changes
+
+- 2d88817: useQueryParams 프레임워크 어댑터 및 Provider 패턴 추가
+
 ## 0.3.0
 
 ### Minor Changes
