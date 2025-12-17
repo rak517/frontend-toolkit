@@ -1,11 +1,43 @@
 import { useRouter } from 'next/router';
 import type { QueryParamsAdapter } from './types';
 
+/**
+ * Next.js Pages Router 어댑터 옵션
+ */
 export interface NextPagesAdapterOptions {
+  /**
+   * URL 변경 시 스크롤 위치 초기화 여부
+   * @default false
+   */
   scroll?: boolean;
+  /**
+   * Shallow routing 사용 여부 (getServerSideProps 재실행 안 함)
+   * @default true
+   */
   shallow?: boolean;
 }
 
+/**
+ * Next.js Pages Router용 어댑터 훅
+ *
+ * `next/router`의 `useRouter`를 사용하여 URL 쿼리 파라미터를 관리합니다.
+ *
+ * @param options - 어댑터 옵션
+ * @returns QueryParamsAdapter 인터페이스 구현체
+ *
+ * @example
+ * ```tsx
+ * // Provider 방식 (권장)
+ * function Providers({ children }: { children: ReactNode }) {
+ *   const adapter = useNextPagesAdapter();
+ *   return (
+ *     <QueryParamsProvider adapter={adapter}>
+ *       {children}
+ *     </QueryParamsProvider>
+ *   );
+ * }
+ * ```
+ */
 export function useNextPagesAdapter(
   options: NextPagesAdapterOptions = {}
 ): QueryParamsAdapter {
