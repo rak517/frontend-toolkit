@@ -1,5 +1,6 @@
-import type { FunnelState } from '../core/types';
 import type { FunnelAdapter, MemoryAdapterOptions } from './types';
+
+const EMPTY_PARAMS = new URLSearchParams();
 
 const DEFAULT_MAX_HISTORY_SIZE = 50;
 
@@ -17,17 +18,13 @@ const DEFAULT_MAX_HISTORY_SIZE = 50;
  * });
  * ```
  */
-export function createMemoryAdapter<
-  TStep extends string,
-  TContext extends object,
->(
-  initialState: FunnelState<TStep, TContext>,
+export function createMemoryAdapter(
   options: MemoryAdapterOptions = {}
-): FunnelAdapter<TStep, TContext> {
+): FunnelAdapter {
   const { maxHistorySize = DEFAULT_MAX_HISTORY_SIZE } = options;
 
   // 히스토리 스택
-  const historyStack: FunnelState<TStep, TContext>[] = [{ ...initialState }];
+  const historyStack: URLSearchParams[] = [new URLSearchParams()];
   let currentIndex = 0;
 
   // 구독자 목록
@@ -37,24 +34,20 @@ export function createMemoryAdapter<
     listeners.forEach(listener => listener());
   };
 
-  const getState = (): FunnelState<TStep, TContext> => {
-    return historyStack[currentIndex]!;
+  const getSearchParams = (): URLSearchParams => {
+    return historyStack[currentIndex] ?? new URLSearchParams();
   };
 
-  const push = (step: TStep, context?: Partial<TContext>): void => {
-    const current = getState();
-    const newContext = context
-      ? { ...current.context, ...context }
-      : current.context;
+  const getServerSnapshot = (): URLSearchParams => {
+    return EMPTY_PARAMS;
+  };
 
+  const push = (params: URLSearchParams): void => {
     // 현재 위치 이후의 히스토리 제거 (새 분기 시작)
     historyStack.splice(currentIndex + 1);
 
     // 새 상태 추가
-    historyStack.push({
-      step,
-      context: newContext,
-    });
+    historyStack.push(new URLSearchParams(params));
 
     // 최대 크기 초과 시 오래된 항목 제거
     if (historyStack.length > maxHistorySize) {
@@ -66,30 +59,9 @@ export function createMemoryAdapter<
     notify();
   };
 
-  const replace = (step: TStep, context?: Partial<TContext>): void => {
-    const current = getState();
-    const newContext = context
-      ? { ...current.context, ...context }
-      : current.context;
-
-    // 현재 상태 교체
-    historyStack[currentIndex] = {
-      step,
-      context: newContext,
-    };
-
+  const replace = (params: URLSearchParams): void => {
+    historyStack[currentIndex] = new URLSearchParams(params);
     notify();
-  };
-
-  const back = (): void => {
-    if (currentIndex > 0) {
-      currentIndex--;
-      notify();
-    }
-  };
-
-  const canGoBack = (): boolean => {
-    return currentIndex > 0;
   };
 
   const subscribe = (listener: () => void): (() => void) => {
@@ -100,11 +72,10 @@ export function createMemoryAdapter<
   };
 
   return {
-    getState,
+    getSearchParams,
+    getServerSnapshot,
     push,
     replace,
-    back,
-    canGoBack,
     subscribe,
   };
 }
