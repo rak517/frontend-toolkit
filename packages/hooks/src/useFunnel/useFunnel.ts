@@ -8,6 +8,11 @@ import type {
 import { createFunnelComponent, createStepComponent } from './core/components';
 import { createMemoryAdapter } from './adapters/memory';
 import type { FunnelAdapter } from './adapters/types';
+import { parseState, serializeState } from './utils';
+
+/** 기본 쿼리 파라미터 키 */
+const DEFAULT_STEP_KEY = 'step';
+const DEFAULT_CONTEXT_KEY = 'context';
 
 /**
  * 어댑터를 포함한 useFunnel 옵션
@@ -17,9 +22,11 @@ export interface UseFunnelOptionsWithAdapter<
   TContext extends object,
 > extends UseFunnelOptions<TStep, TContext> {
   /** 상태 관리 어댑터 (기본값: memory) */
-  adapter?: (
-    initialState: FunnelState<TStep, TContext>
-  ) => FunnelAdapter<TStep, TContext>;
+  adapter?: FunnelAdapter;
+  /** step 쿼리 파라미터 키 (기본값: 'step') */
+  stepKey?: string;
+  /** context 쿼리 파라미터 키 (기본값: 'context') */
+  contextKey?: string;
 }
 
 /**
@@ -57,16 +64,15 @@ export interface UseFunnelOptionsWithAdapter<
  * @example
  * URL 동기화 (browser 어댑터)
  * ```tsx
- * import { createBrowserAdapter } from '@frontend-toolkit-js/hooks';
+ * import { useFunnel, createBrowserAdapter } from '@frontend-toolkit-js/hooks';
  *
  * const funnel = useFunnel(['step1', 'step2'] as const, {
  *   initialStep: 'step1',
- *   adapter: (initial) => createBrowserAdapter(initial, { queryKey: 'step' }),
+ *   adapter: createBrowserAdapter(),
  * });
  *
- * // 브라우저 뒤로가기 자동 지원
- * funnel.history.push('step2');  // URL: ?step=step2
- * funnel.history.back();         // URL: ?step=step1
+ * // URL: ?step=step2&context={"email":"user@example.com"}
+ * funnel.history.push('step2', { email: 'user@example.com' });
  * ```
  */
 export function useFunnel<
@@ -80,7 +86,9 @@ export function useFunnel<
     initialStep,
     initialContext = {} as TContext,
     onStepChange,
-    adapter: createAdapter,
+    adapter: adapterOption,
+    stepKey = DEFAULT_STEP_KEY,
+    contextKey = DEFAULT_CONTEXT_KEY,
   } = options;
 
   // 개발 환경 유효성 검사
@@ -98,27 +106,30 @@ export function useFunnel<
     }
   }
 
-  // 어댑터 초기화 (한 번만 생성)
-  const adapterRef = useRef<FunnelAdapter<TStep, TContext> | null>(null);
+  const defaultAdapter = useMemo(() => createMemoryAdapter(), []);
+  const adapter = adapterOption ?? defaultAdapter;
 
-  if (!adapterRef.current) {
-    const initialState: FunnelState<TStep, TContext> = {
-      step: initialStep,
-      context: initialContext,
-    };
+  // 히스토리 인덱스 추적 (canGoBack용)
+  const historyIndexRef = useRef(0);
 
-    adapterRef.current = createAdapter
-      ? createAdapter(initialState)
-      : createMemoryAdapter(initialState);
-  }
-
-  const adapter = adapterRef.current;
-
-  // useSyncExternalStore로 어댑터 상태 구독
-  const state = useSyncExternalStore(
+  // useSyncExternalStore로 searchParams 직접 구독
+  const searchParams = useSyncExternalStore(
     adapter.subscribe,
-    adapter.getState,
-    adapter.getState // SSR용 getServerSnapshot
+    adapter.getSearchParams,
+    adapter.getServerSnapshot
+  );
+
+  // searchParams → state 변환 (useMemo)
+  const state = useMemo(
+    () =>
+      parseState<TStep, TContext>(
+        searchParams,
+        stepKey,
+        contextKey,
+        initialStep,
+        initialContext
+      ),
+    [searchParams, stepKey, contextKey, initialStep, initialContext]
   );
 
   const { step: currentStep, context } = state;
@@ -134,9 +145,18 @@ export function useFunnel<
           );
         }
 
-        adapter.push(step, data);
-        const newState = adapter.getState();
-        onStepChange?.(newState.step, newState.context);
+        const newContext = data ? { ...state.context, ...data } : state.context;
+
+        const newState: FunnelState<TStep, TContext> = {
+          step,
+          context: newContext,
+        };
+        const params = serializeState(newState, stepKey, contextKey);
+
+        adapter.push(params);
+        historyIndexRef.current++;
+
+        onStepChange?.(step, newContext);
       },
 
       replace: (step: TStep, data?: Partial<TContext>) => {
@@ -147,22 +167,31 @@ export function useFunnel<
           );
         }
 
-        adapter.replace(step, data);
-        const newState = adapter.getState();
-        onStepChange?.(newState.step, newState.context);
+        const newContext = data ? { ...state.context, ...data } : state.context;
+
+        const newState: FunnelState<TStep, TContext> = {
+          step,
+          context: newContext,
+        };
+        const params = serializeState(newState, stepKey, contextKey);
+
+        adapter.replace(params);
+
+        onStepChange?.(step, newContext);
       },
 
       back: () => {
-        adapter.back();
-        const newState = adapter.getState();
-        onStepChange?.(newState.step, newState.context);
+        if (typeof window !== 'undefined') {
+          window.history.back();
+          historyIndexRef.current = Math.max(0, historyIndexRef.current - 1);
+        }
       },
 
       get canGoBack() {
-        return adapter.canGoBack();
+        return historyIndexRef.current > 0;
       },
     }),
-    [adapter, steps, onStepChange]
+    [adapter, steps, stepKey, contextKey, state, onStepChange]
   );
 
   // 어댑터 초기화 및 cleanup
