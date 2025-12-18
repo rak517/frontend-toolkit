@@ -147,13 +147,22 @@ export function useFunnel<
 
         const newContext = data ? { ...state.context, ...data } : state.context;
 
+        // 1. 현재 상태를 현재 히스토리 엔트리에 저장 (replace)
+        const currentState: FunnelState<TStep, TContext> = {
+          step: currentStep,
+          context: newContext,
+        };
+        const currentParams = serializeState(currentState, stepKey, contextKey);
+        adapter.replace(currentParams);
+
+        // 2. 새 스텝으로 이동 (push)
         const newState: FunnelState<TStep, TContext> = {
           step,
           context: newContext,
         };
-        const params = serializeState(newState, stepKey, contextKey);
+        const newParams = serializeState(newState, stepKey, contextKey);
+        adapter.push(newParams);
 
-        adapter.push(params);
         historyIndexRef.current++;
 
         onStepChange?.(step, newContext);
