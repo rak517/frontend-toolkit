@@ -61,7 +61,10 @@ export interface FunnelProps<TStep extends string> {
 /**
  * useFunnel 옵션
  */
-export interface UseFunnelOptions<TStep extends string, TContext extends object> {
+export interface UseFunnelOptions<
+  TStep extends string,
+  TContext extends object,
+> {
   /** 초기 스텝 */
   initialStep: TStep;
   /** 초기 컨텍스트 */
@@ -73,7 +76,10 @@ export interface UseFunnelOptions<TStep extends string, TContext extends object>
 /**
  * useFunnel 반환 타입
  */
-export interface UseFunnelReturn<TStep extends string, TContext extends object> {
+export interface UseFunnelReturn<
+  TStep extends string,
+  TContext extends object,
+> {
   /** 현재 스텝 */
   currentStep: TStep;
   /** 누적된 컨텍스트 */
