@@ -1,14 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  useFunnel,
-  createBrowserAdapter,
-} from '@frontend-toolkit-js/hooks';
+import { useFunnel, createBrowserAdapter } from '@frontend-toolkit-js/hooks';
 
 interface SignUpContext {
   email?: string;
-  password?: string;
   name?: string;
   agreeToTerms?: boolean;
 }
@@ -93,7 +89,7 @@ function PasswordStep({
   onNext,
   onBack,
 }: {
-  onNext: (password: string) => void;
+  onNext: () => void;
   onBack: () => void;
 }) {
   const [password, setPassword] = useState('');
@@ -129,7 +125,7 @@ function PasswordStep({
           이전
         </button>
         <button
-          onClick={() => onNext(password)}
+          onClick={() => onNext()}
           disabled={!isValid}
           style={{ ...primaryButton, opacity: isValid ? 1 : 0.5 }}
         >
@@ -275,7 +271,7 @@ function MemoryAdapterExample() {
 
         <funnel.Step name="password">
           <PasswordStep
-            onNext={password => funnel.history.push('profile', { password })}
+            onNext={() => funnel.history.push('profile')}
             onBack={() => funnel.history.back()}
           />
         </funnel.Step>
@@ -304,10 +300,7 @@ function BrowserAdapterExample() {
   const funnel = useFunnel<Step, SignUpContext>(steps, {
     initialStep: 'email',
     initialContext: {},
-    adapter: initial =>
-      createBrowserAdapter(initial, {
-        queryKey: 'signup-step',
-      }),
+    adapter: createBrowserAdapter(),
   });
 
   return (
@@ -316,7 +309,7 @@ function BrowserAdapterExample() {
       <p style={{ color: '#6b7280', fontSize: '14px' }}>
         URL 쿼리파라미터와 동기화. 브라우저 뒤로가기 지원!
         <br />
-        현재 URL: <code>?signup-step={funnel.currentStep}</code>
+        현재 URL: <code>?signup-step={funnel.currentStep}$context=...</code>
       </p>
 
       <div
@@ -350,7 +343,7 @@ function BrowserAdapterExample() {
 
         <funnel.Step name="password">
           <PasswordStep
-            onNext={password => funnel.history.push('profile', { password })}
+            onNext={() => funnel.history.push('profile')}
             onBack={() => funnel.history.back()}
           />
         </funnel.Step>
