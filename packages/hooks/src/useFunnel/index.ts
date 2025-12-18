@@ -22,5 +22,4 @@ export type {
   FunnelAdapter,
   MemoryAdapterOptions,
   BrowserAdapterOptions,
-  StorageAdapterOptions,
 } from './adapters';
