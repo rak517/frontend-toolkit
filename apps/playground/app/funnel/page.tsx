@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useFunnel, createBrowserAdapter } from '@frontend-toolkit-js/hooks';
+import { useState, Suspense } from 'react';
+import { useFunnel } from '@frontend-toolkit-js/hooks';
+import { useNextAppAdapter } from '@frontend-toolkit-js/hooks/useFunnel/adapters/next-app';
 
 interface SignUpContext {
   email?: string;
@@ -296,20 +297,21 @@ function MemoryAdapterExample() {
   );
 }
 
-function BrowserAdapterExample() {
+function NextAppAdapterExample() {
+  const adapter = useNextAppAdapter();
   const funnel = useFunnel<Step, SignUpContext>(steps, {
     initialStep: 'email',
     initialContext: {},
-    adapter: createBrowserAdapter(),
+    adapter,
   });
 
   return (
     <div>
-      <h3>Browser Adapter (URL 동기화)</h3>
+      <h3>Next.js App Router Adapter (URL 동기화)</h3>
       <p style={{ color: '#6b7280', fontSize: '14px' }}>
-        URL 쿼리파라미터와 동기화. 브라우저 뒤로가기 지원!
+        Next.js App Router용 어댑터. URL 쿼리파라미터와 동기화!
         <br />
-        현재 URL: <code>?signup-step={funnel.currentStep}$context=...</code>
+        현재 URL: <code>?step={funnel.currentStep}&context=...</code>
       </p>
 
       <div
@@ -369,7 +371,7 @@ function BrowserAdapterExample() {
 }
 
 export default function FunnelPage() {
-  const [adapterType, setAdapterType] = useState<'memory' | 'browser'>(
+  const [adapterType, setAdapterType] = useState<'memory' | 'next-app'>(
     'memory'
   );
 
@@ -390,21 +392,23 @@ export default function FunnelPage() {
           Memory Adapter
         </button>
         <button
-          onClick={() => setAdapterType('browser')}
+          onClick={() => setAdapterType('next-app')}
           style={{
             ...buttonStyle,
-            background: adapterType === 'browser' ? '#10b981' : '#e5e7eb',
-            color: adapterType === 'browser' ? 'white' : '#374151',
+            background: adapterType === 'next-app' ? '#10b981' : '#e5e7eb',
+            color: adapterType === 'next-app' ? 'white' : '#374151',
           }}
         >
-          Browser Adapter
+          Next.js App Router
         </button>
       </div>
 
       {adapterType === 'memory' ? (
         <MemoryAdapterExample />
       ) : (
-        <BrowserAdapterExample />
+        <Suspense fallback={<div>Loading...</div>}>
+          <NextAppAdapterExample />
+        </Suspense>
       )}
     </div>
   );
