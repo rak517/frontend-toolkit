@@ -4,9 +4,9 @@
  * URL 쿼리 파라미터 관리를 추상화하여 다양한 환경에서 사용 가능하도록 함
  * - browser: Browser History API 사용
  * - memory: 메모리에서만 관리 (URL 없이)
- * - next-app: Next.js App Router (예정)
- * - next-pages: Next.js Pages Router (예정)
- * - react-router: React Router (예정)
+ * - next-app: Next.js App Router
+ * - next-pages: Next.js Pages Router
+ * - react-router: React Router
  */
 export interface FunnelAdapter {
   /**
@@ -23,12 +23,12 @@ export interface FunnelAdapter {
   /**
    * URL 업데이트 (히스토리에 추가)
    */
-  push: (params: URLSearchParams) => void;
+  push: (params: URLSearchParams) => void | Promise<void>;
 
   /**
    * URL 업데이트 (히스토리 교체)
    */
-  replace: (params: URLSearchParams) => void;
+  replace: (params: URLSearchParams) => void | Promise<void>;
 
   /**
    * 상태 변경 구독

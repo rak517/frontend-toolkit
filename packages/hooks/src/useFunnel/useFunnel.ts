@@ -137,7 +137,7 @@ export function useFunnel<
   // 히스토리 객체 생성
   const history: FunnelHistory<TStep, TContext> = useMemo(
     () => ({
-      push: (step: TStep, data?: Partial<TContext>) => {
+      push: async (step: TStep, data?: Partial<TContext>) => {
         if (process.env.NODE_ENV === 'development' && !steps.includes(step)) {
           console.warn(
             `[useFunnel] "${step}"은 정의되지 않은 스텝입니다.\n` +
@@ -153,7 +153,7 @@ export function useFunnel<
           context: newContext,
         };
         const currentParams = serializeState(currentState, stepKey, contextKey);
-        adapter.replace(currentParams);
+        await adapter.replace(currentParams);
 
         // 2. 새 스텝으로 이동 (push)
         const newState: FunnelState<TStep, TContext> = {
@@ -161,14 +161,14 @@ export function useFunnel<
           context: newContext,
         };
         const newParams = serializeState(newState, stepKey, contextKey);
-        adapter.push(newParams);
+        await adapter.push(newParams);
 
         historyIndexRef.current++;
 
         onStepChange?.(step, newContext);
       },
 
-      replace: (step: TStep, data?: Partial<TContext>) => {
+      replace: async (step: TStep, data?: Partial<TContext>) => {
         if (process.env.NODE_ENV === 'development' && !steps.includes(step)) {
           console.warn(
             `[useFunnel] "${step}"은 정의되지 않은 스텝입니다.\n` +
@@ -184,7 +184,7 @@ export function useFunnel<
         };
         const params = serializeState(newState, stepKey, contextKey);
 
-        adapter.replace(params);
+        await adapter.replace(params);
 
         onStepChange?.(step, newContext);
       },

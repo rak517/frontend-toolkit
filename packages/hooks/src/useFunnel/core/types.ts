@@ -34,9 +34,9 @@ export interface FunnelState<TStep extends string, TContext extends object> {
  */
 export interface FunnelHistory<TStep extends string, TContext extends object> {
   /** 새 스텝으로 이동 (히스토리에 추가) */
-  push(step: TStep, context?: Partial<TContext>): void;
+  push(step: TStep, context?: Partial<TContext>): void | Promise<void>;
   /** 현재 스텝 교체 (히스토리 유지) */
-  replace(step: TStep, context?: Partial<TContext>): void;
+  replace(step: TStep, context?: Partial<TContext>): void | Promise<void>;
   /** 이전 스텝으로 이동 */
   back(): void;
   /** 뒤로가기 가능 여부 */
