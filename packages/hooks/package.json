@@ -1,6 +1,6 @@
 {
   "name": "@frontend-toolkit-js/hooks",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "React hooks for better DX with type safety",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0
+
+### Minor Changes
+
+- 4190734: useFunnel 프레임워크 어댑터 추가
+
 ## 0.5.0
 
 ### Minor Changes
