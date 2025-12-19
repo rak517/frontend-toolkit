@@ -87,15 +87,71 @@ import { useFunnel, createBrowserAdapter } from '@frontend-toolkit-js/hooks';
 
 const funnel = useFunnel(STEPS, {
   initialStep: 'step1',
-  adapter: (initial) =>
-    createBrowserAdapter(initial, {
-      queryKey: 'step', // URL: ?step=step1
-    }),
+  adapter: createBrowserAdapter(),
 });
 
 // 브라우저 뒤로가기 버튼 자동 지원
 funnel.history.push('step2'); // URL: ?step=step2
 funnel.history.back(); // URL: ?step=step1
+```
+
+### Next.js App Router 어댑터
+
+Next.js 13+ App Router 환경에서 사용합니다.
+
+```tsx
+import { useFunnel } from '@frontend-toolkit-js/hooks';
+import { useNextAppAdapter } from '@frontend-toolkit-js/hooks/useFunnel/adapters/next-app';
+
+function MyFunnel() {
+  const adapter = useNextAppAdapter();
+  const funnel = useFunnel(STEPS, {
+    initialStep: 'step1',
+    adapter,
+  });
+
+  return <funnel.Funnel>...</funnel.Funnel>;
+}
+```
+
+> **Note**: `useSearchParams`를 사용하므로 `Suspense`로 감싸야 합니다.
+
+### Next.js Pages Router 어댑터
+
+Next.js Pages Router 환경에서 사용합니다.
+
+```tsx
+import { useFunnel } from '@frontend-toolkit-js/hooks';
+import { useNextPagesAdapter } from '@frontend-toolkit-js/hooks/useFunnel/adapters/next-pages';
+
+function MyFunnel() {
+  const adapter = useNextPagesAdapter({ shallow: true });
+  const funnel = useFunnel(STEPS, {
+    initialStep: 'step1',
+    adapter,
+  });
+
+  return <funnel.Funnel>...</funnel.Funnel>;
+}
+```
+
+### React Router 어댑터
+
+React Router v6+ 환경에서 사용합니다.
+
+```tsx
+import { useFunnel } from '@frontend-toolkit-js/hooks';
+import { useReactRouterAdapter } from '@frontend-toolkit-js/hooks/useFunnel/adapters/react-router';
+
+function MyFunnel() {
+  const adapter = useReactRouterAdapter();
+  const funnel = useFunnel(STEPS, {
+    initialStep: 'step1',
+    adapter,
+  });
+
+  return <funnel.Funnel>...</funnel.Funnel>;
+}
 ```
 
 ## API
@@ -189,12 +245,17 @@ return (
 useFunnel/
 ├── index.ts              # public exports
 ├── useFunnel.ts          # 메인 훅
+├── utils.ts              # 직렬화/역직렬화 유틸
 ├── core/
 │   ├── types.ts          # 타입 정의
 │   ├── components.tsx    # Funnel, Step 컴포넌트 팩토리
 │   └── FunnelContext.tsx # Context, useFunnelContext
 └── adapters/
+    ├── index.ts          # 어댑터 exports
     ├── types.ts          # 어댑터 인터페이스
     ├── memory.ts         # 메모리 어댑터
-    └── browser.ts        # 브라우저 어댑터
+    ├── browser.ts        # 브라우저 어댑터
+    ├── next-app.ts       # Next.js App Router 어댑터
+    ├── next-pages.ts     # Next.js Pages Router 어댑터
+    └── react-router.ts   # React Router 어댑터
 ```
