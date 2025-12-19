@@ -239,6 +239,21 @@ return (
 </button>
 ```
 
+## 주의사항
+
+### 어댑터별 요구사항
+
+| 어댑터 | 요구사항 |
+|--------|----------|
+| Next.js App Router | `Suspense`로 감싸기 필요 |
+| Next.js Pages Router | Router 컨텍스트 내에서 사용 |
+| React Router | `<BrowserRouter>` 등 Router 컨텍스트 내에서 사용 |
+
+### 브라우저 뒤로가기 시 context 유지
+
+`history.push` 호출 시 내부적으로 replace→push 패턴을 사용합니다.
+이를 통해 브라우저 뒤로가기 시에도 이전 스텝의 context가 유지됩니다.
+
 ## 파일 구조
 
 ```
