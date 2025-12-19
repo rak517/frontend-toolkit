@@ -25,6 +25,21 @@
       "types": "./dist/useQueryParams/adapters/react-router.d.ts",
       "import": "./dist/useQueryParams/adapters/react-router.mjs",
       "require": "./dist/useQueryParams/adapters/react-router.js"
+    },
+    "./useFunnel/adapters/next-app": {
+      "types": "./dist/useFunnel/adapters/next-app.d.ts",
+      "import": "./dist/useFunnel/adapters/next-app.mjs",
+      "require": "./dist/useFunnel/adapters/next-app.js"
+    },
+    "./useFunnel/adapters/next-pages": {
+      "types": "./dist/useFunnel/adapters/next-pages.d.ts",
+      "import": "./dist/useFunnel/adapters/next-pages.mjs",
+      "require": "./dist/useFunnel/adapters/next-pages.js"
+    },
+    "./useFunnel/adapters/react-router": {
+      "types": "./dist/useFunnel/adapters/react-router.d.ts",
+      "import": "./dist/useFunnel/adapters/react-router.mjs",
+      "require": "./dist/useFunnel/adapters/react-router.js"
     }
   },
   "files": [

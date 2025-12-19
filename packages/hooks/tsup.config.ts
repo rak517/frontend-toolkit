@@ -6,6 +6,9 @@ export default defineConfig({
     'src/useQueryParams/adapters/next-app.ts',
     'src/useQueryParams/adapters/next-pages.ts',
     'src/useQueryParams/adapters/react-router.ts',
+    'src/useFunnel/adapters/next-app.ts',
+    'src/useFunnel/adapters/next-pages.ts',
+    'src/useFunnel/adapters/react-router.ts',
   ],
   format: ['cjs', 'esm'],
   dts: {
