@@ -14,4 +14,10 @@ export default {
   'use-debounced-callback': {
     title: 'useDebouncedCallback',
   },
+  'use-query-params': {
+    title: 'useQueryParams',
+  },
+  'use-funnel': {
+    title: 'useFunnel',
+  },
 } as const;
