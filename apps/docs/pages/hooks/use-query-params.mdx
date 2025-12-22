@@ -1,0 +1,363 @@
+# useQueryParams
+
+URL 쿼리 파라미터를 선언적으로 관리하는 React Hook입니다.
+
+## 언제 사용하나요?
+
+- 🔍 검색/필터링 (페이지네이션, 정렬)
+- 🔗 URL 공유 (상태 유지)
+- ⬅️ 브라우저 뒤로가기 지원
+- 📊 탭/뷰 상태 관리
+
+## 주요 특징
+
+### 1. 타입 안전성
+
+스키마 기반 파서로 타입 자동 추론
+
+### 2. 선언적 API
+
+Zod 스타일의 빌더 패턴
+
+### 3. SSR 지원
+
+Next.js 등 SSR 환경에서 안전하게 동작
+
+### 4. 프레임워크 어댑터
+
+Browser, Next.js, React Router 등 다양한 환경 지원
+
+---
+
+## 기본 사용법
+
+```tsx
+import {
+  useQueryParams,
+  parseAsInteger,
+  parseAsString,
+  parseAsBoolean,
+  parseAsStringEnum,
+} from '@frontend-toolkit-js/hooks';
+
+const sortOptions = ['latest', 'oldest', 'popular'] as const;
+
+function ProductList() {
+  const { page, search, sort, showSoldOut, setParams } = useQueryParams({
+    page: parseAsInteger.withDefault(1),
+    search: parseAsString.withDefault(''),
+    sort: parseAsStringEnum(sortOptions).withDefault('latest'),
+    showSoldOut: parseAsBoolean.withDefault(false),
+  });
+
+  return (
+    <div>
+      {/* 현재 값 사용 */}
+      <p>현재 페이지: {page}</p>
+      <p>검색어: {search}</p>
+
+      {/* 값 업데이트 */}
+      <button onClick={() => setParams({ page: page + 1 })}>
+        다음 페이지
+      </button>
+
+      {/* 여러 값 동시 업데이트 */}
+      <button onClick={() => setParams({ search: '', page: 1 })}>
+        검색 초기화
+      </button>
+    </div>
+  );
+}
+```
+
+---
+
+## Parsers
+
+### 기본 타입
+
+| Parser | 타입 | 예시 |
+|--------|------|------|
+| `parseAsString` | `string` | `?name=hello` → `'hello'` |
+| `parseAsInteger` | `number` | `?page=5` → `5` |
+| `parseAsFloat` | `number` | `?price=19.99` → `19.99` |
+| `parseAsBoolean` | `boolean` | `?active=true` → `true` |
+
+### 날짜
+
+| Parser | 타입 | 예시 |
+|--------|------|------|
+| `parseAsIsoDate` | `Date` | `?date=2024-01-15` → `Date` |
+| `parseAsIsoDateTime` | `Date` | `?date=2024-01-15T09:30:00Z` → `Date` |
+
+### 복합 타입
+
+| Parser | 타입 | 예시 |
+|--------|------|------|
+| `parseAsStringEnum(values)` | `T` | `?sort=latest` → `'latest'` |
+| `parseAsLiteral(values)` | `T` | `parseAsStringEnum`의 별칭 |
+| `parseAsJson<T>()` | `T` | `?data={"a":1}` → `{ a: 1 }` |
+
+### 배열
+
+| Parser | 타입 | 예시 |
+|--------|------|------|
+| `parseAsArray(parser)` | `T[]` | `?tags=a,b,c` → `['a', 'b', 'c']` |
+| `parseAsNativeArray(parser)` | `T[]` | `?id=1&id=2` → `[1, 2]` |
+
+### Default Values
+
+`.withDefault()`를 사용하면:
+1. 쿼리 파라미터가 없을 때 기본값 사용
+2. 타입이 `T | null`에서 `T`로 변경 (null 제거)
+
+```tsx
+// withDefault 없이: string | null
+const { name } = useQueryParams({
+  name: parseAsString,
+});
+
+// withDefault 사용: string
+const { name } = useQueryParams({
+  name: parseAsString.withDefault(''),
+});
+```
+
+---
+
+## History Options
+
+```tsx
+// replace (기본값): 히스토리에 쌓이지 않음
+setParams({ page: 2 });
+setParams({ page: 2 }, { history: 'replace' });
+
+// push: 히스토리에 추가 (뒤로가기로 이전 상태 복원 가능)
+setParams({ page: 2 }, { history: 'push' });
+```
+
+| 옵션 | 설명 | 사용 사례 |
+|------|------|-----------|
+| `replace` | 현재 히스토리 항목 교체 | 필터 변경, 페이지네이션 |
+| `push` | 새 히스토리 항목 추가 | 탭 전환, 중요한 상태 변경 |
+
+---
+
+## Framework Adapters
+
+프레임워크별 어댑터를 제공합니다. Provider 패턴으로 앱 전역에서 사용할 수 있습니다.
+
+### Next.js App Router
+
+```tsx
+// app/providers.tsx
+'use client';
+
+import { Suspense, type ReactNode } from 'react';
+import { QueryParamsProvider } from '@frontend-toolkit-js/hooks';
+import { useNextAppAdapter } from '@frontend-toolkit-js/hooks/useQueryParams/adapters/next-app';
+
+function QueryParamsProviderInner({ children }: { children: ReactNode }) {
+  const adapter = useNextAppAdapter();
+  return (
+    <QueryParamsProvider adapter={adapter}>
+      {children}
+    </QueryParamsProvider>
+  );
+}
+
+export function Providers({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={null}>
+      <QueryParamsProviderInner>{children}</QueryParamsProviderInner>
+    </Suspense>
+  );
+}
+```
+
+```tsx
+// app/layout.tsx
+import { Providers } from './providers';
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+> **Note**: `useSearchParams`를 사용하므로 `Suspense`로 감싸야 합니다.
+
+### Next.js Pages Router
+
+```tsx
+// _app.tsx
+import { QueryParamsProvider } from '@frontend-toolkit-js/hooks';
+import { useNextPagesAdapter } from '@frontend-toolkit-js/hooks/useQueryParams/adapters/next-pages';
+
+function MyApp({ Component, pageProps }) {
+  const adapter = useNextPagesAdapter({ shallow: true });
+  return (
+    <QueryParamsProvider adapter={adapter}>
+      <Component {...pageProps} />
+    </QueryParamsProvider>
+  );
+}
+```
+
+### React Router v6+
+
+```tsx
+// App.tsx
+import { BrowserRouter } from 'react-router-dom';
+import { QueryParamsProvider } from '@frontend-toolkit-js/hooks';
+import { useReactRouterAdapter } from '@frontend-toolkit-js/hooks/useQueryParams/adapters/react-router';
+
+function Providers({ children }) {
+  const adapter = useReactRouterAdapter();
+  return (
+    <QueryParamsProvider adapter={adapter}>
+      {children}
+    </QueryParamsProvider>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Providers>
+        {/* 라우트 */}
+      </Providers>
+    </BrowserRouter>
+  );
+}
+```
+
+### 어댑터 옵션
+
+| 어댑터 | 옵션 | 기본값 | 설명 |
+|--------|------|--------|------|
+| `useNextAppAdapter` | `scroll` | `false` | URL 변경 시 스크롤 초기화 |
+| `useNextPagesAdapter` | `scroll` | `false` | URL 변경 시 스크롤 초기화 |
+| | `shallow` | `true` | getServerSideProps 재실행 방지 |
+| `useReactRouterAdapter` | `preventScrollReset` | `false` | 스크롤 위치 유지 |
+
+---
+
+## Provider 패턴
+
+Provider를 사용하면 앱 전역에서 어댑터를 공유할 수 있습니다.
+
+```tsx
+// Provider 설정 후, 컴포넌트에서 adapter 생략 가능
+const { page } = useQueryParams({
+  page: parseAsInteger.withDefault(1),
+});
+// adapter 옵션 불필요!
+```
+
+Provider 없이 직접 어댑터를 전달할 수도 있습니다:
+
+```tsx
+import { createQueryParamsBrowserAdapter } from '@frontend-toolkit-js/hooks';
+
+const { page } = useQueryParams(
+  { page: parseAsInteger.withDefault(1) },
+  { adapter: createQueryParamsBrowserAdapter() }
+);
+```
+
+---
+
+## API Reference
+
+### `useQueryParams(schema, options?)`
+
+#### Parameters
+
+| 이름 | 타입 | 설명 |
+|------|------|------|
+| `schema` | `Record<string, Parser>` | 파서 스키마 객체 |
+| `options.adapter` | `QueryParamsAdapter` | 커스텀 어댑터 (Provider 사용 시 생략 가능) |
+
+#### Returns
+
+| 이름 | 타입 | 설명 |
+|------|------|------|
+| `[key]` | `T` | 스키마에 정의된 각 파라미터 값 |
+| `setParams` | `(params, options?) => void` | 파라미터 업데이트 함수 |
+
+### `setParams(params, options?)`
+
+| 옵션 | 타입 | 기본값 | 설명 |
+|------|------|--------|------|
+| `history` | `'push' \| 'replace'` | `'replace'` | 히스토리 처리 방식 |
+
+---
+
+## 주의사항
+
+### ⚠️ SSR 환경에서 Hydration
+
+SSR 환경에서는 서버와 클라이언트의 초기 값이 다를 수 있습니다. 어댑터가 이를 자동으로 처리합니다.
+
+### ⚠️ 배열 파서 선택
+
+```tsx
+// 콤마 구분 (권장): ?tags=a,b,c
+parseAsArray(parseAsString)
+
+// 네이티브 방식: ?id=1&id=2&id=3
+parseAsNativeArray(parseAsInteger)
+```
+
+### ⚠️ Provider 위치
+
+Next.js App Router에서는 `Suspense` 내부에 Provider를 배치해야 합니다.
+
+```tsx
+// ✅ 올바른 방법
+<Suspense fallback={null}>
+  <QueryParamsProviderInner>
+    {children}
+  </QueryParamsProviderInner>
+</Suspense>
+```
+
+---
+
+## TypeScript
+
+모든 타입이 자동으로 추론됩니다.
+
+```tsx
+const { page, search, tags } = useQueryParams({
+  page: parseAsInteger.withDefault(1),
+  search: parseAsString.withDefault(''),
+  tags: parseAsArray(parseAsString).withDefault([]),
+});
+
+page;    // number (not null)
+search;  // string (not null)
+tags;    // string[] (not null)
+```
+
+withDefault 없이 사용하면 `null`이 포함됩니다:
+
+```tsx
+const { page } = useQueryParams({
+  page: parseAsInteger,
+});
+
+page;  // number | null
+```
+
+---
+
+## 관련 문서
+
+- [useFunnel](/hooks/use-funnel) - 단계별 UI 흐름 관리
