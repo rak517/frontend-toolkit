@@ -1,0 +1,388 @@
+# useFunnel
+
+단계별 UI 흐름(퍼널)을 선언적으로 관리하는 Hook입니다.
+
+## 언제 사용하나요?
+
+- 📝 회원가입 플로우
+- 💳 결제 프로세스
+- 🎯 온보딩 튜토리얼
+- 📋 설문조사, 폼 위저드
+
+## 주요 특징
+
+### 1. 선언적 UI
+
+Funnel/Step 컴포넌트로 직관적인 구조
+
+### 2. 컨텍스트 관리
+
+스텝 간 데이터 자동 누적
+
+### 3. 브라우저 히스토리 지원
+
+뒤로가기 시 이전 스텝 + 데이터 복원
+
+### 4. 프레임워크 어댑터
+
+Memory, Browser, Next.js, React Router 지원
+
+---
+
+## 기본 사용법
+
+```tsx
+import { useFunnel } from '@frontend-toolkit-js/hooks';
+
+const STEPS = ['email', 'password', 'profile', 'done'] as const;
+
+function SignUpFunnel() {
+  const funnel = useFunnel(STEPS, {
+    initialStep: 'email',
+  });
+
+  return (
+    <funnel.Funnel>
+      <funnel.Step name="email">
+        <div>
+          <h2>이메일 입력</h2>
+          <button onClick={() => funnel.history.push('password')}>
+            다음
+          </button>
+        </div>
+      </funnel.Step>
+
+      <funnel.Step name="password">
+        <div>
+          <h2>비밀번호 설정</h2>
+          <button onClick={() => funnel.history.back()}>이전</button>
+          <button onClick={() => funnel.history.push('profile')}>
+            다음
+          </button>
+        </div>
+      </funnel.Step>
+
+      <funnel.Step name="profile">
+        <div>
+          <h2>프로필 설정</h2>
+          <button onClick={() => funnel.history.back()}>이전</button>
+          <button onClick={() => funnel.history.push('done')}>
+            완료
+          </button>
+        </div>
+      </funnel.Step>
+
+      <funnel.Step name="done">
+        <div>
+          <h2>가입 완료!</h2>
+        </div>
+      </funnel.Step>
+    </funnel.Funnel>
+  );
+}
+```
+
+---
+
+## 컨텍스트로 데이터 전달
+
+스텝 간 데이터를 전달하려면 `history.push`의 두 번째 인자를 사용합니다.
+
+```tsx
+interface SignUpContext {
+  email?: string;
+  password?: string;
+  name?: string;
+}
+
+function SignUpFunnel() {
+  const funnel = useFunnel<(typeof STEPS)[number], SignUpContext>(STEPS, {
+    initialStep: 'email',
+    initialContext: {},
+  });
+
+  return (
+    <funnel.Funnel>
+      <funnel.Step name="email">
+        <EmailStep
+          onNext={(email) => funnel.history.push('password', { email })}
+        />
+      </funnel.Step>
+
+      <funnel.Step name="password">
+        <PasswordStep
+          onNext={(password) => funnel.history.push('profile', { password })}
+          onBack={() => funnel.history.back()}
+        />
+      </funnel.Step>
+
+      <funnel.Step name="profile">
+        <ProfileStep
+          onNext={(name) => funnel.history.push('done', { name })}
+          onBack={() => funnel.history.back()}
+        />
+      </funnel.Step>
+
+      <funnel.Step name="done">
+        {/* 누적된 컨텍스트 사용 */}
+        <p>환영합니다, {funnel.context.name}님!</p>
+        <p>이메일: {funnel.context.email}</p>
+      </funnel.Step>
+    </funnel.Funnel>
+  );
+}
+```
+
+데이터는 자동으로 누적됩니다:
+
+```tsx
+// email step
+funnel.history.push('password', { email: 'user@example.com' });
+// context: { email: 'user@example.com' }
+
+// password step
+funnel.history.push('profile', { password: '1234' });
+// context: { email: 'user@example.com', password: '1234' }
+
+// profile step
+funnel.history.push('done', { name: '홍길동' });
+// context: { email: 'user@example.com', password: '1234', name: '홍길동' }
+```
+
+---
+
+## 어댑터
+
+상태 저장 방식을 어댑터로 선택할 수 있습니다.
+
+### Memory 어댑터 (기본값)
+
+메모리에만 상태를 저장합니다. 새로고침 시 초기화됩니다.
+
+```tsx
+const funnel = useFunnel(STEPS, {
+  initialStep: 'email',
+  // adapter 미지정 시 memory 어댑터 사용
+});
+```
+
+### Browser 어댑터
+
+URL 쿼리 파라미터와 동기화합니다. 브라우저 뒤로가기/앞으로가기를 지원합니다.
+
+```tsx
+import { useFunnel, createBrowserAdapter } from '@frontend-toolkit-js/hooks';
+
+const funnel = useFunnel(STEPS, {
+  initialStep: 'email',
+  adapter: createBrowserAdapter(),
+});
+
+// URL: ?step=password&context={"email":"user@example.com"}
+```
+
+### Next.js App Router
+
+```tsx
+import { useFunnel } from '@frontend-toolkit-js/hooks';
+import { useNextAppAdapter } from '@frontend-toolkit-js/hooks/useFunnel/adapters/next-app';
+
+function SignUpFunnel() {
+  const adapter = useNextAppAdapter();
+  const funnel = useFunnel(STEPS, {
+    initialStep: 'email',
+    adapter,
+  });
+
+  return <funnel.Funnel>...</funnel.Funnel>;
+}
+```
+
+> **Note**: `useSearchParams`를 사용하므로 `Suspense`로 감싸야 합니다.
+
+### Next.js Pages Router
+
+```tsx
+import { useFunnel } from '@frontend-toolkit-js/hooks';
+import { useNextPagesAdapter } from '@frontend-toolkit-js/hooks/useFunnel/adapters/next-pages';
+
+function SignUpFunnel() {
+  const adapter = useNextPagesAdapter({ shallow: true });
+  const funnel = useFunnel(STEPS, {
+    initialStep: 'email',
+    adapter,
+  });
+
+  return <funnel.Funnel>...</funnel.Funnel>;
+}
+```
+
+### React Router v6+
+
+```tsx
+import { useFunnel } from '@frontend-toolkit-js/hooks';
+import { useReactRouterAdapter } from '@frontend-toolkit-js/hooks/useFunnel/adapters/react-router';
+
+function SignUpFunnel() {
+  const adapter = useReactRouterAdapter();
+  const funnel = useFunnel(STEPS, {
+    initialStep: 'email',
+    adapter,
+  });
+
+  return <funnel.Funnel>...</funnel.Funnel>;
+}
+```
+
+---
+
+## API Reference
+
+### `useFunnel(steps, options)`
+
+#### Parameters
+
+| 이름 | 타입 | 설명 |
+|------|------|------|
+| `steps` | `readonly string[]` | 스텝 이름 배열 (`as const` 권장) |
+| `options.initialStep` | `string` | 초기 스텝 (필수) |
+| `options.initialContext` | `object` | 초기 컨텍스트 데이터 |
+| `options.onStepChange` | `(step, context) => void` | 스텝 변경 콜백 |
+| `options.adapter` | `FunnelAdapter` | 상태 관리 어댑터 |
+
+#### Returns
+
+| 이름 | 타입 | 설명 |
+|------|------|------|
+| `currentStep` | `string` | 현재 스텝 |
+| `context` | `object` | 누적된 컨텍스트 데이터 |
+| `history` | `FunnelHistory` | 히스토리 관리 객체 |
+| `Funnel` | `Component` | 퍼널 컨테이너 |
+| `Step` | `Component` | 스텝 컴포넌트 |
+
+### `history` 객체
+
+| 메서드/속성 | 타입 | 설명 |
+|-------------|------|------|
+| `push` | `(step, data?) => void` | 새 스텝으로 이동 (히스토리 추가) |
+| `replace` | `(step, data?) => void` | 현재 스텝 교체 (히스토리 유지) |
+| `back` | `() => void` | 이전 스텝으로 이동 |
+| `canGoBack` | `boolean` | 뒤로가기 가능 여부 |
+
+### `Funnel` / `Step` 컴포넌트
+
+```tsx
+<funnel.Funnel>
+  <funnel.Step name="step1">
+    {/* step1 내용 */}
+  </funnel.Step>
+  <funnel.Step name="step2">
+    {/* step2 내용 */}
+  </funnel.Step>
+</funnel.Funnel>
+```
+
+- `Funnel`: 현재 스텝에 해당하는 `Step`만 렌더링
+- `Step`: `name` prop으로 스텝 식별
+
+---
+
+## 실무 패턴
+
+### 진행률 표시
+
+```tsx
+const steps = ['a', 'b', 'c'] as const;
+const funnel = useFunnel(steps, { initialStep: 'a' });
+
+const currentIndex = steps.indexOf(funnel.currentStep);
+const progress = ((currentIndex + 1) / steps.length) * 100;
+
+return (
+  <div>
+    <div style={{ width: `${progress}%`, height: 4, background: 'blue' }} />
+    <funnel.Funnel>...</funnel.Funnel>
+  </div>
+);
+```
+
+### 조건부 스텝
+
+```tsx
+<funnel.Step name="payment">
+  {needsVerification ? (
+    <button onClick={() => funnel.history.push('verify')}>
+      본인인증 필요
+    </button>
+  ) : (
+    <button onClick={() => funnel.history.push('complete')}>
+      결제하기
+    </button>
+  )}
+</funnel.Step>
+```
+
+### 초기화 (처음부터 다시)
+
+```tsx
+<button onClick={() => funnel.history.replace('email', {})}>
+  처음부터 다시
+</button>
+```
+
+`replace`를 사용하면 히스토리에 쌓이지 않고, 빈 객체 `{}`를 전달하면 컨텍스트가 초기화됩니다.
+
+---
+
+## 주의사항
+
+### 어댑터별 요구사항
+
+| 어댑터 | 요구사항 |
+|--------|----------|
+| Next.js App Router | `Suspense`로 감싸기 필요 |
+| Next.js Pages Router | Router 컨텍스트 내에서 사용 |
+| React Router | `<BrowserRouter>` 등 Router 컨텍스트 내에서 사용 |
+
+### 브라우저 뒤로가기 시 context 유지
+
+`history.push` 호출 시 내부적으로 **replace→push 패턴**을 사용합니다.
+
+```
+1. replace: 현재 히스토리 엔트리에 context 저장
+2. push: 새 스텝으로 이동
+```
+
+이를 통해 브라우저 뒤로가기 시에도 이전 스텝의 context가 유지됩니다.
+
+---
+
+## TypeScript
+
+스텝과 컨텍스트 타입이 자동으로 추론됩니다.
+
+```tsx
+const STEPS = ['email', 'password', 'done'] as const;
+
+interface MyContext {
+  email?: string;
+  password?: string;
+}
+
+const funnel = useFunnel<(typeof STEPS)[number], MyContext>(STEPS, {
+  initialStep: 'email',
+  initialContext: {},
+});
+
+funnel.currentStep;  // 'email' | 'password' | 'done'
+funnel.context;      // MyContext
+
+// 잘못된 스텝 이름 → 타입 에러
+funnel.history.push('invalid'); // ❌ Error
+```
+
+---
+
+## 관련 문서
+
+- [useQueryParams](/hooks/use-queryparams) - URL 쿼리 파라미터 관리
