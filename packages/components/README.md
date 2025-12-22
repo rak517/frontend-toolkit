@@ -80,9 +80,3 @@ pnpm test       # 테스트
 ## 라이선스
 
 MIT © [rak517](https://github.com/rak517)
-
----
-
-## 라이선스
-
-MIT © [rak517](https://github.com/rak517)
