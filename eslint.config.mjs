@@ -15,6 +15,11 @@ export default tseslint.config(
   },
 
   {
+    files: ['**/*.test.ts', '**/*.test.tsx'],
+    extends: [tseslint.configs.disableTypeChecked],
+  },
+
+  {
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'error',
