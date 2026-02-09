@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { UseCalendarOptions } from './types';
 import { createCalendar, createWeekdays, parseDate } from './core';
 import { addMonths, subMonths } from 'date-fns';
-import { useIsMounted } from '../useIsMounted';
 
 /**
  * 달력 데이터와 네비게이션을 제공하는 Hook
@@ -27,19 +26,11 @@ import { useIsMounted } from '../useIsMounted';
  * ```
  */
 export function useCalendar(options: UseCalendarOptions = {}) {
-  const { defaultDate = new Date(), weekStartsOn = 0, onChange } = options;
+  const { defaultDate, weekStartsOn = 0, onChange } = options;
 
-  const isMounted = useIsMounted();
-
-  const initialDate = useMemo(() => {
-    return defaultDate != null ? parseDate(defaultDate) : new Date();
-  }, [defaultDate, isMounted]);
-
-  const [currentDate, setCurrentDate] = useState(initialDate);
-
-  useEffect(() => {
-    setCurrentDate(initialDate);
-  }, [initialDate]);
+  const [currentDate, setCurrentDate] = useState(() =>
+    defaultDate != null ? parseDate(defaultDate) : new Date()
+  );
 
   const days = useMemo(
     () => createCalendar(currentDate, { weekStartsOn }),
