@@ -128,6 +128,45 @@ describe('SuspenseBoundary', () => {
     });
   });
 
+  describe('통합 동작 (Suspense + ErrorBoundary)', () => {
+    it('로딩 → 에러: Suspense 해소 후 에러 발생 시 errorFallback을 렌더링한다', async () => {
+      let resolve: () => void;
+      let status: 'pending' | 'resolved' = 'pending';
+      const promise = new Promise<void>((r) => {
+        resolve = () => {
+          r();
+          status = 'resolved';
+        };
+      });
+
+      // resolve 후 렌더링 시 에러를 throw하는 컴포넌트
+      function SuspendThenError() {
+        if (status === 'pending') throw promise;
+        throw new Error('로딩 후 에러');
+      }
+
+      render(
+        <SuspenseBoundary
+          pendingFallback={<div>로딩 중...</div>}
+          errorFallback={(error) => <div>에러: {error.message}</div>}
+        >
+          <SuspendThenError />
+        </SuspenseBoundary>
+      );
+
+      // 1단계: 로딩 상태
+      expect(screen.getByText('로딩 중...')).toBeDefined();
+
+      // 2단계: resolve → 렌더링 시도 → 에러 → errorFallback
+      await act(async () => {
+        resolve!();
+      });
+
+      expect(screen.getByText('에러: 로딩 후 에러')).toBeDefined();
+      expect(screen.queryByText('로딩 중...')).toBeNull();
+    });
+  });
+
   describe('props 전달', () => {
     it('onError가 호출된다', () => {
       const onError = vi.fn();
