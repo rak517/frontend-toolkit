@@ -12,7 +12,7 @@ let mockObserverInstances: Array<{
 beforeEach(() => {
   mockObserverInstances = [];
 
-  const MockIntersectionObserver = vi.fn((callback: IntersectionObserverCallback) => {
+  const MockIntersectionObserver = vi.fn(function (callback: IntersectionObserverCallback) {
     const instance = {
       observe: vi.fn(),
       disconnect: vi.fn(),
