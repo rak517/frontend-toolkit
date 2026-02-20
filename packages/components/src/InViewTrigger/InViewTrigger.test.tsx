@@ -32,7 +32,7 @@ function triggerIntersection(isIntersecting: boolean) {
 beforeEach(() => {
   vi.useFakeTimers();
 
-  const MockIntersectionObserver = vi.fn((callback: IntersectionObserverCallback) => {
+  const MockIntersectionObserver = vi.fn(function (callback: IntersectionObserverCallback) {
     mockObserverCallback = callback;
     mockObserverInstance = {
       observe: vi.fn(),
