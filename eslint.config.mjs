@@ -15,7 +15,7 @@ export default tseslint.config(
   },
 
   {
-    files: ['**/*.test.ts', '**/*.test.tsx'],
+    files: ['**/*.test.ts', '**/*.test.tsx', '**/fixtures/**/*.ts', '**/fixtures/**/*.tsx'],
     extends: [tseslint.configs.disableTypeChecked],
   },
 
