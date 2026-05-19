@@ -26,8 +26,8 @@ describe("detectTestEnvironment", () => {
 
     expect(result).toEqual({
       framework: "vitest",
-      hasTestingLibrary: false,
-      testFilePattern: "*.test.ts",
+      hasTestingLibrary: true,
+      testFilePattern: "*.test.tsx",
       configFile: "vitest.config.ts",
     });
   });

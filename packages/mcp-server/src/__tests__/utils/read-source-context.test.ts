@@ -1,8 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { readSourceContext } from "../../utils/read-source-context.js";
-import * as fs from "node:fs";
+import { readFileSync } from "node:fs";
 
-vi.mock("node:fs");
+vi.mock("node:fs", () => ({
+  readFileSync: vi.fn(),
+}));
 
 const SAMPLE_FILE = `import { describe } from "vitest";
 
@@ -19,9 +21,13 @@ describe("sample", () => {
 `;
 
 describe("readSourceContext", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe("컨텍스트 읽기", () => {
     it("실패 라인 기준 전후 3줄을 반환한다", () => {
-      vi.mocked(fs.readFileSync).mockReturnValue(SAMPLE_FILE);
+      vi.mocked(readFileSync).mockReturnValue(SAMPLE_FILE);
 
       const result = readSourceContext("/src/test.ts", 6);
 
@@ -32,7 +38,7 @@ describe("readSourceContext", () => {
     });
 
     it("실패 라인에 > 마커를 표시한다", () => {
-      vi.mocked(fs.readFileSync).mockReturnValue(SAMPLE_FILE);
+      vi.mocked(readFileSync).mockReturnValue(SAMPLE_FILE);
 
       const result = readSourceContext("/src/test.ts", 6);
 
@@ -43,7 +49,7 @@ describe("readSourceContext", () => {
     });
 
     it("다른 라인에는 공백 마커를 표시한다", () => {
-      vi.mocked(fs.readFileSync).mockReturnValue(SAMPLE_FILE);
+      vi.mocked(readFileSync).mockReturnValue(SAMPLE_FILE);
 
       const result = readSourceContext("/src/test.ts", 6);
 
@@ -53,7 +59,7 @@ describe("readSourceContext", () => {
     });
 
     it("라인 번호를 4자리로 패딩한다", () => {
-      vi.mocked(fs.readFileSync).mockReturnValue(SAMPLE_FILE);
+      vi.mocked(readFileSync).mockReturnValue(SAMPLE_FILE);
 
       const result = readSourceContext("/src/test.ts", 6);
 
@@ -64,7 +70,7 @@ describe("readSourceContext", () => {
 
   describe("파일 시작/끝 경계 처리", () => {
     it("첫 번째 줄이 실패하면 시작 부분만 반환한다", () => {
-      vi.mocked(fs.readFileSync).mockReturnValue(SAMPLE_FILE);
+      vi.mocked(readFileSync).mockReturnValue(SAMPLE_FILE);
 
       const result = readSourceContext("/src/test.ts", 1);
 
@@ -76,7 +82,7 @@ describe("readSourceContext", () => {
 
     it("마지막 줄이 실패하면 끝 부분만 반환한다", () => {
       const totalLines = SAMPLE_FILE.split("\n").length;
-      vi.mocked(fs.readFileSync).mockReturnValue(SAMPLE_FILE);
+      vi.mocked(readFileSync).mockReturnValue(SAMPLE_FILE);
 
       const result = readSourceContext("/src/test.ts", totalLines);
 
@@ -88,7 +94,7 @@ describe("readSourceContext", () => {
 
   describe("에러 처리", () => {
     it("파일을 읽을 수 없으면 null을 반환한다", () => {
-      vi.mocked(fs.readFileSync).mockImplementation(() => {
+      vi.mocked(readFileSync).mockImplementation(() => {
         throw new Error("ENOENT");
       });
 
