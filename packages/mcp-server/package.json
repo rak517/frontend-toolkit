@@ -1,0 +1,26 @@
+{
+  "name": "@frontend-toolkit-js/mcp-server",
+  "version": "0.0.1",
+  "description": "MCP server for frontend-toolkit — test automation, hook/component analysis",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "frontend-toolkit-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "check-types": "tsc --noEmit"
+  },
+  "keywords": ["mcp", "testing", "frontend", "hooks", "components"],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@typescript-eslint/typescript-estree": "^8.52.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3"
+  }
+}

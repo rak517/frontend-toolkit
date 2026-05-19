@@ -9,6 +9,7 @@
     { "path": "./packages/components" },
     { "path": "./packages/utils" },
     { "path": "./apps/docs" },
-    { "path": "./apps/playground" }
+    { "path": "./apps/playground" },
+    { "path": "./packages/mcp-server" }
   ]
 }
