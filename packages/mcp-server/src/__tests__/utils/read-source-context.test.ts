@@ -1,35 +1,38 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, afterAll } from "vitest";
 import { readSourceContext } from "../../utils/read-source-context.js";
-import { readFileSync } from "node:fs";
+import { writeFileSync, mkdirSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 
-vi.mock("node:fs", () => ({
-  readFileSync: vi.fn(),
-}));
+const TEMP_DIR = join(tmpdir(), "read-source-context-test");
+const TEMP_FILE = join(TEMP_DIR, "sample.ts");
 
-const SAMPLE_FILE = `import { describe } from "vitest";
+const SAMPLE_CONTENT = [
+  'import { describe } from "vitest";',
+  "",
+  'describe("sample", () => {',
+  '  it("test 1", () => {',
+  "    const x = 1;",
+  "    expect(x).toBe(2);",
+  "  });",
+  "",
+  '  it("test 2", () => {',
+  "    expect(true).toBe(true);",
+  "  });",
+  "});",
+].join("\n");
 
-describe("sample", () => {
-  it("test 1", () => {
-    const x = 1;
-    expect(x).toBe(2);
-  });
+mkdirSync(TEMP_DIR, { recursive: true });
+writeFileSync(TEMP_FILE, SAMPLE_CONTENT);
 
-  it("test 2", () => {
-    expect(true).toBe(true);
-  });
+afterAll(() => {
+  rmSync(TEMP_DIR, { recursive: true, force: true });
 });
-`;
 
 describe("readSourceContext", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   describe("컨텍스트 읽기", () => {
     it("실패 라인 기준 전후 3줄을 반환한다", () => {
-      vi.mocked(readFileSync).mockReturnValue(SAMPLE_FILE);
-
-      const result = readSourceContext("/src/test.ts", 6);
+      const result = readSourceContext(TEMP_FILE, 6);
 
       expect(result).not.toBeNull();
       const lines = result!.split("\n");
@@ -38,9 +41,7 @@ describe("readSourceContext", () => {
     });
 
     it("실패 라인에 > 마커를 표시한다", () => {
-      vi.mocked(readFileSync).mockReturnValue(SAMPLE_FILE);
-
-      const result = readSourceContext("/src/test.ts", 6);
+      const result = readSourceContext(TEMP_FILE, 6);
 
       const lines = result!.split("\n");
       const failLine = lines.find((l) => l.startsWith(">"));
@@ -49,9 +50,7 @@ describe("readSourceContext", () => {
     });
 
     it("다른 라인에는 공백 마커를 표시한다", () => {
-      vi.mocked(readFileSync).mockReturnValue(SAMPLE_FILE);
-
-      const result = readSourceContext("/src/test.ts", 6);
+      const result = readSourceContext(TEMP_FILE, 6);
 
       const lines = result!.split("\n");
       const nonFailLines = lines.filter((l) => l.startsWith(" "));
@@ -59,9 +58,7 @@ describe("readSourceContext", () => {
     });
 
     it("라인 번호를 4자리로 패딩한다", () => {
-      vi.mocked(readFileSync).mockReturnValue(SAMPLE_FILE);
-
-      const result = readSourceContext("/src/test.ts", 6);
+      const result = readSourceContext(TEMP_FILE, 6);
 
       expect(result).toMatch(/>\s+6 \|/);
       expect(result).toMatch(/\s+3 \|/);
@@ -70,9 +67,7 @@ describe("readSourceContext", () => {
 
   describe("파일 시작/끝 경계 처리", () => {
     it("첫 번째 줄이 실패하면 시작 부분만 반환한다", () => {
-      vi.mocked(readFileSync).mockReturnValue(SAMPLE_FILE);
-
-      const result = readSourceContext("/src/test.ts", 1);
+      const result = readSourceContext(TEMP_FILE, 1);
 
       const lines = result!.split("\n");
       expect(lines[0]).toMatch(/^>/);
@@ -81,10 +76,9 @@ describe("readSourceContext", () => {
     });
 
     it("마지막 줄이 실패하면 끝 부분만 반환한다", () => {
-      const totalLines = SAMPLE_FILE.split("\n").length;
-      vi.mocked(readFileSync).mockReturnValue(SAMPLE_FILE);
+      const totalLines = SAMPLE_CONTENT.split("\n").length;
 
-      const result = readSourceContext("/src/test.ts", totalLines);
+      const result = readSourceContext(TEMP_FILE, totalLines);
 
       const lines = result!.split("\n");
       const markerLine = lines.find((l) => l.startsWith(">"));
@@ -94,10 +88,6 @@ describe("readSourceContext", () => {
 
   describe("에러 처리", () => {
     it("파일을 읽을 수 없으면 null을 반환한다", () => {
-      vi.mocked(readFileSync).mockImplementation(() => {
-        throw new Error("ENOENT");
-      });
-
       const result = readSourceContext("/nonexistent/file.ts", 1);
 
       expect(result).toBeNull();
