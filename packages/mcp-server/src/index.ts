@@ -28,6 +28,31 @@ import {
   suggestTestNamesSchema,
 } from "./tools/test/suggest-test-names.js";
 import { runTests, runTestsSchema } from "./tools/test/run-tests.js";
+import { listHooksSchema, runListHooks } from "./tools/hooks/list-hooks.js";
+import {
+  getHookDetailsSchema,
+  runGetHookDetails,
+} from "./tools/hooks/get-hook-details.js";
+import {
+  listComponentsSchema,
+  runListComponents,
+} from "./tools/components/list-components.js";
+import {
+  scaffoldHookSchema,
+  runScaffoldHook,
+} from "./tools/hooks/scaffold-hook.js";
+import {
+  validateHookSchema,
+  runValidateHook,
+} from "./tools/hooks/validate-hook.js";
+import {
+  registerHookSchema,
+  runRegisterHook,
+} from "./tools/hooks/register-hook.js";
+import {
+  reviewHookSchema,
+  runReviewHook,
+} from "./tools/hooks/review-hook.js";
 
 const server = new McpServer({
   name: "frontend-toolkit",
@@ -128,6 +153,78 @@ server.registerTool(
     inputSchema: runTestsSchema,
   },
   runTests
+);
+
+// Tool 10: 훅 목록 조회
+server.registerTool(
+  "list_hooks",
+  {
+    description: "packages/hooks/src 하위의 훅 목록을 조회합니다",
+    inputSchema: listHooksSchema,
+  },
+  runListHooks
+);
+
+// Tool 11: 훅 상세 정보
+server.registerTool(
+  "get_hook_details",
+  {
+    description:
+      "특정 훅의 소스를 분석하여 파라미터, 의존성, 사용된 React 훅 목록을 반환합니다",
+    inputSchema: getHookDetailsSchema,
+  },
+  runGetHookDetails
+);
+
+// Tool 12: 컴포넌트 목록 조회
+server.registerTool(
+  "list_components",
+  {
+    description: "packages/components/src 하위의 컴포넌트 목록을 조회합니다",
+    inputSchema: listComponentsSchema,
+  },
+  runListComponents
+);
+
+// Tool 13: 훅 스캐폴딩
+server.registerTool(
+  "scaffold_hook",
+  {
+    description: "새 훅 디렉토리 + 소스 파일 + 테스트 파일을 생성합니다",
+    inputSchema: scaffoldHookSchema,
+  },
+  runScaffoldHook
+);
+
+// Tool 14: 훅 테스트 검증
+server.registerTool(
+  "validate_hook",
+  {
+    description: "훅의 테스트를 실행하고 결과를 반환합니다",
+    inputSchema: validateHookSchema,
+  },
+  runValidateHook
+);
+
+// Tool 15: 훅 barrel export 등록
+server.registerTool(
+  "register_hook",
+  {
+    description: "훅을 barrel export(index.ts)에 등록합니다",
+    inputSchema: registerHookSchema,
+  },
+  runRegisterHook
+);
+
+// Tool 16: 훅 코드 리뷰
+server.registerTool(
+  "review_hook",
+  {
+    description:
+      "훅 코드를 구조적으로 검증합니다 (네이밍, deps 배열, 메모이제이션, 조건부 훅 호출)",
+    inputSchema: reviewHookSchema,
+  },
+  runReviewHook
 );
 
 async function main(): Promise<void> {
