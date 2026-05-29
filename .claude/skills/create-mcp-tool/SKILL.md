@@ -26,12 +26,16 @@ description: "새 MCP 도구를 scaffold하고 구현하는 워크플로우. 도
 
 ```typescript
 import { z } from 'zod';
+import type { McpToolResponse } from '../../types.js';
+import { errorResponse } from '../../utils/error-response.js';
 
 export const {ToolName}Schema = z.object({
   // 파라미터 정의
 });
 
-export async function {toolName}Handler(args: z.infer<typeof {ToolName}Schema>) {
+export async function run{ToolName}(
+  args: z.infer<typeof {ToolName}Schema>
+): Promise<McpToolResponse> {
   // 구현
 }
 ```
@@ -40,16 +44,18 @@ export async function {toolName}Handler(args: z.infer<typeof {ToolName}Schema>) 
 `packages/mcp-server/src/index.ts`에 도구를 등록한다:
 
 ```typescript
-import { {ToolName}Schema, {toolName}Handler } from './tools/{domain}/{tool-name}';
+import {
+  {ToolName}Schema,
+  run{ToolName},
+} from "./tools/{domain}/{tool-name}.js";
 
-server.tool(
-  '{tool_name}',
-  '{도구 설명}',
-  {ToolName}Schema.shape,
-  async (args) => {
-    const result = await {toolName}Handler(args);
-    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-  }
+server.registerTool(
+  "{tool_name}",
+  {
+    description: "{도구 설명}",
+    inputSchema: {ToolName}Schema,
+  },
+  run{ToolName}
 );
 ```
 

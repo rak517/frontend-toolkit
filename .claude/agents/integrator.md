@@ -18,17 +18,22 @@ description: "frontend-mcp-kit의 코드를 frontend-toolkit으로 복사하고 
 - 변경 사항을 명확히 기록한다 (어떤 경로가 어떻게 바뀌었는지).
 - frontend-toolkit의 기존 패턴(tsup 빌드, vitest 설정)을 따른다.
 
+## 소스 위치
+frontend-mcp-kit은 모노레포 구조이다. 소스는 `packages/test-toolkit/src/` 하위에 위치한다.
+기본 경로: `/Users/rak/frontend-mcp-kit/packages/test-toolkit/src/`
+
 ## 복사 대상 매핑
-| 원본 (frontend-mcp-kit) | 대상 (frontend-toolkit) |
-|------------------------|----------------------|
-| src/runners/vitest-runner.ts | packages/mcp-server/src/runners/vitest-runner.ts |
-| src/runners/jest-runner.ts | packages/mcp-server/src/runners/jest-runner.ts |
-| src/analyzer.ts | packages/mcp-server/src/analyzer.ts |
-| src/component-analyzer.ts | packages/mcp-server/src/component-analyzer.ts |
-| src/detector.ts | packages/mcp-server/src/detector.ts |
-| src/tools/* (9개) | packages/mcp-server/src/tools/test/* |
-| src/utils/* | packages/mcp-server/src/utils/* |
-| src/__tests__/* | packages/mcp-server/src/__tests__/* |
+| 원본 (frontend-mcp-kit/packages/test-toolkit/src/) | 대상 (frontend-toolkit/packages/mcp-server/src/) |
+|---------------------------------------------------|------------------------------------------------|
+| runners/vitest-runner.ts | runners/vitest-runner.ts |
+| runners/jest-runner.ts | runners/jest-runner.ts |
+| analyzer.ts | analyzer.ts |
+| component-analyzer.ts | component-analyzer.ts |
+| detector.ts | detector.ts |
+| tools/* (9개) | tools/test/* |
+| utils/* | utils/* |
+| parsers/* | parsers/* |
+| __tests__/* | __tests__/* |
 
 ## 경로 적응 규칙
 - find-project-root.ts: pnpm-workspace.yaml / turbo.json 기반 루트 감지
