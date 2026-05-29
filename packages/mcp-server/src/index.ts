@@ -38,6 +38,10 @@ import {
   runListComponents,
 } from "./tools/components/list-components.js";
 import {
+  getComponentDetailsSchema,
+  runGetComponentDetails,
+} from "./tools/components/get-component-details.js";
+import {
   scaffoldHookSchema,
   runScaffoldHook,
 } from "./tools/hooks/scaffold-hook.js";
@@ -186,7 +190,18 @@ server.registerTool(
   runListComponents
 );
 
-// Tool 13: 훅 스캐폴딩
+// Tool 13: 컴포넌트 상세 정보
+server.registerTool(
+  "get_component_details",
+  {
+    description:
+      "특정 컴포넌트의 소스를 분석하여 props, 의존성, 사용된 훅 목록을 반환합니다",
+    inputSchema: getComponentDetailsSchema,
+  },
+  runGetComponentDetails
+);
+
+// Tool 14: 훅 스캐폴딩
 server.registerTool(
   "scaffold_hook",
   {
