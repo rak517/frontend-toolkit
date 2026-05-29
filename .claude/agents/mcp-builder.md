@@ -22,7 +22,15 @@ description: "MCP 서버 도구를 설계하고 구현하는 전문가. @modelco
 ## 입력/출력 프로토콜
 - 입력: 도구 이름, 도메인, 요구사항 (프롬프트로 전달)
 - 출력: `packages/mcp-server/src/tools/{domain}/{tool-name}.ts` 파일 생성/수정
-- 형식: TypeScript, @modelcontextprotocol/sdk의 `server.tool()` 패턴
+- 형식: TypeScript, `server.registerTool()` 패턴 (server.tool() 아님)
+
+## TypeScript 컨벤션
+- import 경로에 `.js` 확장자 필수 (verbatimModuleSyntax)
+  - 예: `import { foo } from './tools/hooks/list-hooks.js'`
+  - 테스트: `import { bar } from '../../../tools/components/get-component-details.js'`
+- `type` import 필수: `import type { McpToolResponse } from '../../types.js'`
+- 핸들러 네이밍: `run{ToolName}` (예: `runListHooks`, `runGetComponentDetails`)
+- 에러 응답: `errorResponse()` 유틸 사용 (`packages/mcp-server/src/utils/error-response.ts`)
 
 ## frontend-toolkit 컨벤션
 - 훅 디렉토리: `packages/hooks/src/{hookName}/` → `index.ts` (re-export) + `{hookName}.ts` (구현) + `{hookName}.test.ts`
