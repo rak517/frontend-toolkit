@@ -19,7 +19,6 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest",
     "bench": "vitest bench",
     "check-types": "tsc --noEmit",
     "lint": "eslint src/"
