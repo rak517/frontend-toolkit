@@ -45,3 +45,7 @@ pnpm-debug.log*
 
 # OS
 Thumbs.db
+
+# Claude Code 로컬 설정
+.mcp.json
+.claude/settings.json
